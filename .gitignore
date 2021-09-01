@@ -2,9 +2,13 @@
 .Rhistory
 .Ruserdata
 .Renviron
+
 *.RData
 *.Rds
 *.xlsx
 *.xls
+*.html
+
 data/
 results/
+test/
