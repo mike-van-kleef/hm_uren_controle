@@ -13,15 +13,17 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
   # - gate_agg: data frame with aggregated gate data
   #
   
+  
 # Aggregate gate data to level workingday
   gate_agg <- gate %>%
     filter(site_ind_gate_ind != 'Buiten site_UIT') %>%
-    group_by(common_id, first_name, last_name, contractor, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, last_clock, number_of_clocks) %>%
+    group_by(common_id, first_name, last_name, contractor, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, last_clock, last_clock_buiten_site, number_of_clocks, check_first_before_last_ind) %>%
     summarise(
       bruto_working_hours = sum(workhours)
       ) %>%
     as.data.frame()
 
+  
 # determine correction_early_arrival
   gate_agg$start_dayshift     <- p_shift_start_day    # add shift_start_day
   gate_agg$start_nightshift   <- p_shift_start_night  # add shift_start_night
