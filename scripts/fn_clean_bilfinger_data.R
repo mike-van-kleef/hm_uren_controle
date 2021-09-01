@@ -44,6 +44,9 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
                )
            )
 
+# Name contractor  
+  data$contractor_decl = 'Bilfinger Maintenance'
+  
 # NOG AANPASSEN IN BESTAND
   data <- data %>%
     mutate(
