@@ -17,7 +17,9 @@ p_shift_end_day      <- format("17:15:00", format = "%H:%M:%S") # specifies the 
 p_shift_end_night    <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
 p_hour               <- 2                                       # specifies the range for correction of workinghours for being early or late.
 
+# load packages
 library(tidyverse)
+library(lubridate)
 
 # import all functions from map 'scripts'
   invisible( # suppress output
@@ -97,7 +99,7 @@ library(tidyverse)
 
   
 # combine gate data with contractors 
-  
+  df_agg.uren_controle_person <- CombineEmployeeGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
 
   
   
