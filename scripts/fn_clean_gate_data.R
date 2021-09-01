@@ -60,22 +60,22 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
     select(-c(time_dummy)) %>%
     ungroup() %>% as.data.frame() 
     
-# determine shift
+# determine shift based on clocking on site
   data_agg <- data %>%
     filter(site_op_buiten == 'Op site') %>%
     group_by(common_id,working_day) %>%
     summarise(
-      first_clock      = min(datetime_check_in_out),
-      first_clock_hour = as.numeric(format(first_clock, format = "%H")),
-      last_clock       = max(datetime_check_in_out),
-      last_clock_hour  = as.numeric(format(last_clock, format = "%H")),
-      number_of_clocks = n(),
-      shift_type       = case_when(
+      first_clock        = min(datetime_check_in_out),
+      first_clock_hour   = as.numeric(format(first_clock, format = "%H")),
+      last_clock         = max(datetime_check_in_out),
+      last_clock_hour    = as.numeric(format(last_clock, format = "%H")),
+      number_of_clocks   = n(),
+      shift_type         = case_when(
         first_clock_hour  >= 6  & first_clock_hour  <= 14    ~ 'dagshift',
         first_clock_hour  >= 15 & first_clock_hour  <= 23    ~ 'nachtshift',
         first_clock_hour  >= 0  & first_clock_hour  <= 4     ~ 'nachtshift',
-        first_clock_hour  >= 5  & last_clock_hour   >= 10    ~ 'dagshift',     
-        first_clock_hour  >= 5  & last_clock_hour   <= 7     ~ 'nachtshift',   
+        first_clock_hour  >= 5                               ~ 'dagshift',     
+        #first_clock_hour  >= 5  & last_clock_hour   <= 7     ~ 'nachtshift',   
         TRUE                                                 ~ 'geen'
         )
     ) %>%
@@ -89,6 +89,21 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
       shift_type = if_else(is.na(shift_type) == TRUE,'UNKNOWN',shift_type)
     )
 
+# determine last clock hour based on clocking buiten site
+  data_agg_buiten_site <- data %>%
+    filter(site_ind_gate_ind == 'Buiten site_UIT') %>%
+    group_by(common_id,working_day) %>%
+    summarise(
+      last_clock_buiten_site  = max(datetime_check_in_out)
+    )
+  
+  data <- data %>%
+    left_join(data_agg_buiten_site, by = c('common_id','working_day')) %>%
+    mutate(
+      check_first_before_last_ind = if_else(difftime(last_clock_buiten_site,first_clock, units = "hours") < 0, 'Fout','Goed')
+    )
+
+      
 return(data)  
   
 }
