@@ -35,7 +35,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       first_clock_time             = hms(format(gate_agg$first_clock, format = "%H:%M:%S")),
       
       
-      date_check_in_out_correction = case_when(
+      date_check_in_out_correction_agg = case_when(
         
         toupper(job_function_type) == "DIRECT" & shift_type == "dagshift"
         & first_clock_time > (hms(p_shift_start_day) - hours(p_hour)) 
