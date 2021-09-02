@@ -66,10 +66,13 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
     group_by(common_id,working_day) %>%
     summarise(
       first_clock        = min(datetime_check_in_out),
-      first_clock_hour   = as.numeric(format(first_clock, format = "%H")),
       last_clock         = max(datetime_check_in_out),
+      number_of_clocks   = n()
+    ) %>%
+    mutate(
+      first_clock_hour   = as.numeric(format(first_clock, format = "%H")),
+      first_clock_time   = hms(format(first_clock,format = "%H:%M:%S")),
       last_clock_hour    = as.numeric(format(last_clock, format = "%H")),
-      number_of_clocks   = n(),
       shift_type         = case_when(
         first_clock_hour  >= 6  & first_clock_hour  <= 14    ~ 'dagshift',
         first_clock_hour  >= 15 & first_clock_hour  <= 23    ~ 'nachtshift',
@@ -94,7 +97,10 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
     filter(site_ind_gate_ind == 'Buiten site_UIT') %>%
     group_by(common_id,working_day) %>%
     summarise(
-      last_clock_buiten_site  = max(datetime_check_in_out)
+      last_clock_buiten_site      = max(datetime_check_in_out)
+    ) %>%
+    mutate(
+      last_clock_time_buiten_site = hms(format(last_clock_buiten_site,format = "%H:%M:%S"))
     )
   
   data <- data %>%
