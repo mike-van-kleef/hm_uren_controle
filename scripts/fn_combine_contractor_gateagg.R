@@ -20,8 +20,16 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
   
   uren_controle_person  <- contractor %>%
     full_join(gate_agg, by = c('common_id' = 'common_id', 'date_work' = 'working_day', 'job_function_type' = 'job_function_type')) %>%
+    
     mutate(
-      delta_declaratie_vs_bruto_uren = round(as.numeric(decl_working_hours) - bruto_working_hours,1)
+      decl_working_hours               = if_else(is.na(decl_working_hours)  ==TRUE, 0, decl_working_hours),
+      bruto_working_hours              = if_else(is.na(bruto_working_hours) ==TRUE, 0, bruto_working_hours),
+      netto_working_hours              = if_else(is.na(netto_working_hours) ==TRUE, 0, netto_working_hours),
+    ) %>%
+    
+    mutate(
+      delta_declaration_vs_bruto_hours = round(decl_working_hours - bruto_working_hours,2),
+      delta_declaration_vs_netto_hours = round(decl_working_hours - netto_working_hours,2)
     )
   
   
