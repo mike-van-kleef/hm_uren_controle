@@ -26,8 +26,9 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
       values_to = 'decl_working_hours' 
     ) %>% 
     mutate(
-      date_work = as.Date(as.numeric(date_work), origin = '1970-01-01'),
-      common_id = toupper(common_id)
+      date_work           = as.Date(as.numeric(date_work), origin = '1970-01-01'),
+      common_id           = toupper(common_id),
+      decl_working_hours  = as.numeric(decl_working_hours)
     ) %>%
     as.data.frame()
 
