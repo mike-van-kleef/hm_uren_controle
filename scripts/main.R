@@ -1,10 +1,14 @@
 
-# INITIAL -----------------------------------------------------------------
+# INITIAL ----------------------------------------------------------------------
+
 # Clean R environment
   rm(list = ls(all = TRUE))          # Environment
   if(!is.null(dev.list())) dev.off() # Plots
   cat("\014")                        # Console
 
+
+  
+# PARAMETERS -------------------------------------------------------------------  
 
 # Parameters
 p_select_period      <- TRUE                                    # specifies whether data is selected over a period of time
@@ -16,6 +20,11 @@ p_shift_start_night  <- format("18:00:00", format = "%H:%M:%S") # specifies the 
 p_shift_end_day      <- format("17:15:00", format = "%H:%M:%S") # specifies the start of day shift
 p_shift_end_night    <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
 p_hour               <- 2                                       # specifies the range for correction of workinghours for being early or late.
+p_work_break         <- 0.75                                    # specifies time for work break
+
+
+
+# Packages and Functions--------------------------------------------------------  
 
 # load packages
 library(tidyverse)
@@ -32,6 +41,9 @@ library(lubridate)
     )
   )
 
+
+  
+# Import Data   ----------------------------------------------------------------    
 
 # load port data (staging)
   file_map                <-  'data/raw/gate/'
@@ -59,6 +71,8 @@ library(lubridate)
   df.bf_staging           <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 2)
   
 
+  
+# Clean Data   ----------------------------------------------------------------      
 # clean gate data
   df.gate_clean             <- CleanGateData(data = df.gate_staging, site = df.site_staging, p_workday_split = p_workday_split,
                                              p_select_period = p_select_period, p_gate_data_start = p_period_start, p_gate_data_end = p_period_end)
@@ -83,23 +97,23 @@ library(lubridate)
   df.gate_clean_employee    <- CombineGateEmployee(gate = df.gate_clean, employee = df.employee)
 
 
-# correction on hours for early arrival and the hours after end shift   ###### ???? TOEPASSEN OP AGGREGATIE ######
-  # df.gate_correction  <- CorrectionHours(data = df.gate_clean_employee, 
-  #                                        p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night, 
-  #                                        p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-  #                                        p_hour = p_hour)
+# correction on hours for early arrival and the hours after end shift   
+  df.gate_correction  <- CorrectionHours(data = df.gate_clean_employee,
+                                         p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
+                                         p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
+                                         p_hour = p_hour)
     
 
-# aggregate gate data to day
-  df_agg.gate         <- AggregateGate(gate = df.gate_clean_employee, 
-                                       p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night, 
+# aggregate gate data to day 
+  df_agg.gate         <- AggregateGate(gate = df.gate_correction,
+                                       p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
                                        p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-                                       p_hour = p_hour)
+                                       p_hour            = p_hour           , p_work_break        = p_work_break)
 
 
   
 # combine gate data with contractors 
-  df_agg.uren_controle_person <- CombineEmployeeGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
+  df_agg.uren_controle_person <- CombineContractorGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
 
   
   
