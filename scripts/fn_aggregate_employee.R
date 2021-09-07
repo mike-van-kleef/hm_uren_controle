@@ -24,8 +24,8 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
       tot_correction_early_arrival          = sum(tot_correction_early_arrival),
       tot_work_break                        = sum(work_break),
       tot_netto_working_hours               = sum(netto_working_hours),
-      tot_delta_declaration_vs_bruto_hours  = sum(delta_declaration_vs_bruto_hours),
-      tot_delta_declaration_vs_netto_hours  = sum(delta_declaration_vs_netto_hours)
+      tot_delta_decl_vs_bruto_hours         = sum(delta_decl_vs_bruto_hours),
+      tot_delta_decl_vs_netto_hours         = sum(delta_decl_vs_netto_hours)
     ) %>% 
     group_by(common_id) %>%
     mutate(
