@@ -39,7 +39,9 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
       decl_working_hours               = if_else(is.na(decl_working_hours)           ==TRUE, 0, decl_working_hours),
       bruto_working_hours              = if_else(is.na(bruto_working_hours)          ==TRUE, 0, bruto_working_hours),
       tot_correction_early_arrival     = if_else(is.na(tot_correction_early_arrival) ==TRUE, 0, tot_correction_early_arrival),
+      tot_correction_late_departed     = if_else(is.na(tot_correction_late_departed) ==TRUE, 0, tot_correction_late_departed),
       work_break                       = if_else(is.na(work_break)                   ==TRUE, 0, work_break),
+      change_of_dress_time             = if_else(is.na(change_of_dress_time)         ==TRUE, 0, change_of_dress_time),
       netto_working_hours              = if_else(is.na(netto_working_hours)          ==TRUE, 0, netto_working_hours),
     ) %>%
     
@@ -73,13 +75,15 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        correction_start_shift_ind,
        bruto_working_hours,
        tot_correction_early_arrival,
+       tot_correction_late_departed,
        work_break,
+       change_of_dress_time,
        netto_working_hours,
        delta_decl_vs_bruto_hours,
        delta_decl_vs_netto_hours,
        first_clock,
-       last_clock_buiten_site,
-       working_days_without_checkout_correction_ind
+       last_clock_buiten_site
+       #working_days_without_checkout_correction_ind
        
      )
     
