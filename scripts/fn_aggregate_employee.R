@@ -22,7 +22,9 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
       tot_working_days                      = sum(if_else(bruto_working_hours > 0, 1, 0)),
       tot_bruto_working_hours               = sum(bruto_working_hours),
       tot_correction_early_arrival          = sum(tot_correction_early_arrival),
+      tot_correction_late_departed          = sum(tot_correction_late_departed),
       tot_work_break                        = sum(work_break),
+      tot_change_of_dress_time              = sum(change_of_dress_time),
       tot_netto_working_hours               = sum(netto_working_hours),
       tot_delta_decl_vs_bruto_hours         = sum(delta_decl_vs_bruto_hours),
       tot_delta_decl_vs_netto_hours         = sum(delta_decl_vs_netto_hours)
