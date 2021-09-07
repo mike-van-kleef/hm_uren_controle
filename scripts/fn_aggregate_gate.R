@@ -1,14 +1,18 @@
-AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_end_day, p_shift_end_night, p_hour, p_work_break){
+AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_end_day, p_shift_end_night, p_hour, 
+                          p_work_break_threshhold, p_work_break_small, p_work_break_normal, p_work_break_min_threshhold){
   # This function aggregate the gate data to the level person, workday
   #
   # Args:
   # - gate : data frame with aggregated gate data, in the form of output function CombineGateEmployee
-  # - p_shift_start_day   : parameter specifies the start of day shift
-  # - p_shift_start_night : parameter specifies the start of night shift
-  # - p_shift_end_day     : parameter specifies the end of day shift
-  # - p_shift_end_night   : parameter specifies the end of night shift
-  # - p_hour              : parameter specifies the range for correction of workinghours for being early or late.
-  # - p_work_break        : parameter specifies time for work break
+  # - p_shift_start_day           : parameter specifies the start of day shift
+  # - p_shift_start_night         : parameter specifies the start of night shift
+  # - p_shift_end_day             : parameter specifies the end of day shift
+  # - p_shift_end_night           : parameter specifies the end of night shift
+  # - p_hour                      : parameter specifies the range for correction of workinghours for being early or late.
+  # - p_work_break_threshhold     : parameter specifies the threshhold for small or normal work_break
+  # - p_work_break_small          : parameter specifies time for small work break
+  # - p_work_break_normal         : parameter specifies time for normal work break
+  # - p_work_break_min_threshhold : parameter specifies the minimum threshhold. Below this threshold there is no work_break
   #
   # Returns:
   # - gate_agg: data frame with aggregated gate data
@@ -20,16 +24,25 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
 # Aggregate gate data to level workingday
   gate_agg <- gate %>%
     filter(site_ind_gate_ind != 'Buiten site_UIT') %>%
-    group_by(common_id, first_name, last_name, contractor, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, first_clock_time, last_clock, last_clock_buiten_site, number_of_clocks, check_first_before_last_ind) %>%
+    group_by(common_id, first_name, last_name, contractor, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, first_clock_time, last_clock, last_clock_buiten_site, working_days_without_checkout_correction_ind, number_of_clocks, check_first_before_last_ind) %>%
     summarise(
       bruto_working_hours          = sum(workhours),
       tot_correction_early_arrival = sum(correction_early_arrival), 
       correction_start_shift_ind   = max(correction_start_ind, na.rm = TRUE)
       ) %>%
     mutate(
-      work_break                   = p_work_break,
+      
+      # Determine Work Break
+      work_break                   = case_when(
+        bruto_working_hours <= p_work_break_min_threshhold                                                   ~ 0
+        bruto_working_hours > p_work_break_min_threshhold & bruto_working_hours <= p_work_break_threshhold   ~ p_work_break_small
+        TRUE                                                                                                 ~ p_work_break_normal
+        ),
+      
+      # Determine Netto Working Hours
       netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - work_break
-    ) %>% as.data.frame()
+      
+      ) %>% as.data.frame()
 
 #------------------------------------------------------------------------------
 #  CORRECTION START KAN NIET OP AGGRAGATE WANT IEMAND KAN VOOR STARTSHIFT OOK WEER UITKLOKKEN  
