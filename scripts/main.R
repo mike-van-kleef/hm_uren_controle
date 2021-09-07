@@ -24,6 +24,7 @@ p_work_break_min_threshhold <- 2                                       # specifi
 p_work_break_threshhold     <- 4                                       # specifies the threshhold for small or normal work break
 p_work_break_small          <- 0.25                                    # specifies time for small work break
 p_work_break_normal         <- 0.75                                    # specifies time for normal work break
+p_change_of_dress_time      <- 0.25                                    # specifies time for changing of dress
 p_hour_threshold            <- 15                                      # specifies maximum hours between two clockings. This exceeds if there is no Clocking out from sote (Buiten site_UIT)
 
 
@@ -112,11 +113,11 @@ library(lubridate)
 
 # aggregate gate data to day 
   df_agg.gate              <- AggregateGate(gate = df.gate_correction,
-                                            p_shift_start_day  = p_shift_start_day  , p_shift_start_night     = p_shift_start_night,
-                                            p_shift_end_day    = p_shift_end_day    , p_shift_end_night       = p_shift_end_night,
-                                            p_hour             = p_hour             , p_work_break_threshhold = p_work_break_threshhold, 
-                                            p_work_break_small = p_work_break_small , p_work_break_normal     = p_work_break_normal,
-                                            p_work_break_min_threshhold = p_work_break_min_threshhold)
+                                            p_shift_start_day  = p_shift_start_day                    , p_shift_start_night     = p_shift_start_night,
+                                            p_shift_end_day    = p_shift_end_day                      , p_shift_end_night       = p_shift_end_night,
+                                            p_hour             = p_hour                               , p_work_break_threshhold = p_work_break_threshhold, 
+                                            p_work_break_small = p_work_break_small                   , p_work_break_normal     = p_work_break_normal,
+                                            p_work_break_min_threshhold = p_work_break_min_threshhold , p_change_of_dress_time  = p_change_of_dress_time)
 
 
   
