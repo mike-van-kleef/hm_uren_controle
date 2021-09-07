@@ -41,6 +41,9 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
         TRUE                                                                       ~ datetime_check_in_out
         ),
       
+      # determine correction_start_ind
+      correction_start_ind = if_else(datetime_check_in_out_correction != datetime_check_in_out, 1, 0),
+      
       # Determine deviating start shift
       deviating_start_shift        = case_when(
             shift_type == "dagshift" 
@@ -52,9 +55,9 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
             | first_clock_time >= (hms(p_shift_start_night) + hours(p_hour))) ~ 'afwijkende shift',
         
         TRUE                                                                  ~ 'normale shift'
-            
+      )
       
-      correction_start_ind = if_else(datetime_check_in_out_correction != datetime_check_in_out, 1, 0)
+
     ) %>%
     
     group_by(common_id) %>%
@@ -77,7 +80,14 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
   data$end_dayshift       <- p_shift_end_day      # add shift_end_day
   data$end_nightshift     <- p_shift_end_night    # add shift_end_night    
 
-     
+    
+  
+  # working_days_without_checkout_correction_ind = case_when(
+  #   check_first_before_last_ind == 'UNKNOWN' & workhours >= 8 & lead(workhours) >= 12 ~ 1,
+  #   workhours >= p_workhour_threshold                                                 ~ 1
+  #   TRUE                                                                              ~ 0
+  # )  
+   
 return(data)
 
 }
