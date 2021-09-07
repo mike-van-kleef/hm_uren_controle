@@ -102,11 +102,20 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
     mutate(
       last_clock_time_buiten_site = hms(format(last_clock_buiten_site,format = "%H:%M:%S"))
     )
-  
+
+# combine data with data_agg_buiten_site and determine check_first_before_last_ind
   data <- data %>%
     left_join(data_agg_buiten_site, by = c('common_id','working_day')) %>%
     mutate(
-      check_first_before_last_ind = if_else(difftime(last_clock_buiten_site,first_clock, units = "hours") < 0, 'Fout','Goed')
+      check_first_before_last_ind = case_when(
+        is.na(last_clock_buiten_site)                                     ~ 'UNKNOWN',
+        difftime(last_clock_buiten_site,first_clock, units = "hours") < 0 ~ 'Nee',
+        TRUE                                                              ~ 'Ja'),
+      
+      working_days_without_checkout_correction_ind = case_when(
+        check_first_before_last_ind == 'UNKNOWN' & workhours >= 8 & lead(workhours) >= 12 ~ 1,
+        TRUE                                                                              ~ 0
+        )
     )
 
       
