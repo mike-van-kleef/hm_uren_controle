@@ -42,7 +42,10 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
       time_dummy         = difftime(datetime_check_in_out,date_check_in_out, units = "hours"),
       working_day        = if_else(time_dummy <= workday_split, date_check_in_out - 1, date_check_in_out),
       site_ind_gate_ind  = paste0(site_op_buiten, "_", gate_in_out),
-      common_id          = if_else(is.na(common_id) == TRUE, 'Unknown', toupper(common_id))
+      common_id          = if_else(is.na(common_id) == TRUE,  'UNKNOWN', toupper(common_id)),
+      first_name         = if_else(is.na(first_name) == TRUE, 'UNKNOWN', trimws(first_name)),
+      last_name          = if_else(is.na(contractor) == TRUE, 'UNKNOWN', trimws(last_name)),
+      contractor         = if_else(is.na(contractor) == TRUE, 'UNKNOWN', trimws(contractor))
       ) %>%
     
     group_by(common_id) %>% 
@@ -118,7 +121,25 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
         )
     )
 
-      
+
+# Check if common_id is unique
+  unique_id_name                        <- unique(data[,c('common_id','last_name','contractor')])
+  id_check                              <- plyr::count(unique_id_name,'common_id')
+  id_not_unique                         <- id_check[id_check$freq>1,]
+  df.id_not_unique                      <- unique_id_name[unique_id_name$common_id %in% id_not_unique$common_id,]
+  df.id_not_unique$common_id_unique_ind <- 'Yes'
+
+# add attribute common_id_unique_ind    
+  data <- data %>%
+    left_join(df.id_not_unique[,c('common_id','common_id_unique_ind')]) %>%
+    mutate(
+      common_id_unique_ind = if_else(is.na(common_id_unique_ind) == TRUE, 'No', common_id_unique_ind)
+    )
+  
+  
+  cat('Common_id not unique in gate data:', '\n')
+  print(df.id_not_unique)
+        
 return(data)  
   
 }
