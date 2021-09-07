@@ -24,6 +24,7 @@ p_work_break_min_threshhold <- 2                                       # specifi
 p_work_break_threshhold     <- 4                                       # specifies the threshhold for small or normal work break
 p_work_break_small          <- 0.25                                    # specifies time for small work break
 p_work_break_normal         <- 0.75                                    # specifies time for normal work break
+p_hour_threshold            <- 15                                      # specifies maximum hours between two clockings. This exceeds if there is no Clocking out from sote (Buiten site_UIT)
 
 
 
@@ -89,9 +90,6 @@ library(lubridate)
     df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
   }
 
-  nrow(unique(df.bilfinger_clean[,c('common_id','full_name','tarif','date_work','job_function')]))
-  x = plyr::count(df.bilfinger_clean[,c('common_id','full_name','firma','date_work','job_function')])
-  x[x$freq > 1,]
   
 # combine contractors  ####### Nog andere contractors toevoegen #####
   df.contractor            <- df.bilfinger_clean
@@ -123,8 +121,8 @@ library(lubridate)
 
   
 # combine gate data with contractors 
-  df_agg.hours_check_employee_working_day <- CombineContractorGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
-  nrow(unique(df_agg.hours_check_employee_working_day[,c('common_id','full_name','date_work')]))
+  df_agg.hours_check_employee_working_day <- CombineContractorGateAgg( contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
+  
   
 # aggregate to level employee
 # Bilfinger has 628 unique common_ids. 1 common_id with a double full_name and common_id = XXXX with 7 full_names. Together 636 unique common_id - full_names
@@ -158,6 +156,8 @@ library(lubridate)
   z3 = z[is.na(z$first_name) == FALSE,]  
   
 # write.csv2(z2, "analyse/Bilfinger_unknown_persons.csv")  
-  
-  plyr::count(df.gate_clean,'current_next_in_out')
+# write.csv2(df_agg.hours_check_employee_working_day, "results/urencontrole_werkdag.csv")    
+# write.csv2(df_agg.hours_check_employee, "results/urencontrole_medewerker.csv")      
+
+
   
