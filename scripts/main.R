@@ -11,16 +11,20 @@
 # PARAMETERS -------------------------------------------------------------------  
 
 # Parameters
-p_select_period      <- TRUE                                    # specifies whether data is selected over a period of time
-p_period_start       <- as.Date('2021-03-14')                   # specifies the start date of the period
-p_period_end         <- as.Date('2021-06-02')                   # specifies the end date of the period
-p_workday_split      <- 6                                       # specifies the split. work hours for the split are counted on the previous day
-p_shift_start_day    <- format("07:00:00", format = "%H:%M:%S") # specifies the start of day shift
-p_shift_start_night  <- format("18:00:00", format = "%H:%M:%S") # specifies the start of night shift
-p_shift_end_day      <- format("17:15:00", format = "%H:%M:%S") # specifies the start of day shift
-p_shift_end_night    <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
-p_hour               <- 2                                       # specifies the range for correction of workinghours for being early or late.
-p_work_break         <- 0.75                                    # specifies time for work break
+p_select_period             <- TRUE                                    # specifies whether data is selected over a period of time
+p_period_start              <- as.Date('2021-03-14')                   # specifies the start date of the period
+p_period_end                <- as.Date('2021-06-02')                   # specifies the end date of the period
+p_workday_split             <- 6                                       # specifies the split. work hours for the split are counted on the previous day
+p_shift_start_day           <- format("07:00:00", format = "%H:%M:%S") # specifies the start of day shift
+p_shift_start_night         <- format("18:00:00", format = "%H:%M:%S") # specifies the start of night shift
+p_shift_end_day             <- format("17:15:00", format = "%H:%M:%S") # specifies the start of day shift
+p_shift_end_night           <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
+p_hour                      <- 2                                       # specifies the range for correction of workinghours for being early or late.
+p_work_break_min_threshhold <- 2                                       # specifies the minimum threshhold. Below this threshold there is no work_break
+p_work_break_threshhold     <- 4                                       # specifies the threshhold for small or normal work break
+p_work_break_small          <- 0.25                                    # specifies time for small work break
+p_work_break_normal         <- 0.75                                    # specifies time for normal work break
+
 
 
 
@@ -82,9 +86,13 @@ library(lubridate)
   
   # select bilfinger data for given time horizon. Only if (p_select_period == TRUE
   if (p_select_period == TRUE){
-    df.bilfinger_clean <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
+    df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
   }
 
+  nrow(unique(df.bilfinger_clean[,c('common_id','full_name','tarif','date_work','job_function')]))
+  x = plyr::count(df.bilfinger_clean[,c('common_id','full_name','firma','date_work','job_function')])
+  x[x$freq > 1,]
+  
 # combine contractors  ####### Nog andere contractors toevoegen #####
   df.contractor            <- df.bilfinger_clean
   
@@ -94,31 +102,36 @@ library(lubridate)
 
 
 # combine gate data with employees
-  df.gate_clean_employee    <- CombineGateEmployee(gate = df.gate_clean, employee = df.employee)
+  df.gate_clean_employee   <- CombineGateEmployee(gate = df.gate_clean, employee = df.employee)
 
 
 # correction on hours for early arrival and the hours after end shift   
-  df.gate_correction  <- CorrectionHours(data = df.gate_clean_employee,
-                                         p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
-                                         p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-                                         p_hour = p_hour)
-    
+  df.gate_correction       <- CorrectionHours(data = df.gate_clean_employee,
+                                              p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
+                                              p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
+                                              p_hour = p_hour)
+  
 
 # aggregate gate data to day 
-  df_agg.gate         <- AggregateGate(gate = df.gate_correction,
-                                       p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
-                                       p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-                                       p_hour            = p_hour           , p_work_break        = p_work_break)
+  df_agg.gate              <- AggregateGate(gate = df.gate_correction,
+                                            p_shift_start_day  = p_shift_start_day  , p_shift_start_night     = p_shift_start_night,
+                                            p_shift_end_day    = p_shift_end_day    , p_shift_end_night       = p_shift_end_night,
+                                            p_hour             = p_hour             , p_work_break_threshhold = p_work_break_threshhold, 
+                                            p_work_break_small = p_work_break_small , p_work_break_normal     = p_work_break_normal,
+                                            p_work_break_min_threshhold = p_work_break_min_threshhold)
 
 
   
 # combine gate data with contractors 
-  df_agg.uren_controle_person <- CombineContractorGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
+  df_agg.hours_check_employee_working_day <- CombineContractorGateAgg(contractor = df.contractor, gate_agg = df_agg.gate, employee = df.employee)  
+  nrow(unique(df_agg.hours_check_employee_working_day[,c('common_id','full_name','date_work')]))
+  
+# aggregate to level employee
+# Bilfinger has 628 unique common_ids. 1 common_id with a double full_name and common_id = XXXX with 7 full_names. Together 636 unique common_id - full_names
+  df_agg.hours_check_employee             <- EmployeeCheckAgg(hours_check_employee_working_day = df_agg.hours_check_employee_working_day)  
+  
+  
 
-  
-  
-  
-  
   
   
         
