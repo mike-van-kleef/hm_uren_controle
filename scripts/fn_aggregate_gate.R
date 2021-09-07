@@ -24,19 +24,23 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
 # Aggregate gate data to level workingday
   gate_agg <- gate %>%
     filter(site_ind_gate_ind != 'Buiten site_UIT') %>%
-    group_by(common_id, first_name, last_name, contractor, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, first_clock_time, last_clock, last_clock_buiten_site, working_days_without_checkout_correction_ind, number_of_clocks, check_first_before_last_ind) %>%
+    group_by(common_id, common_id_unique_ind, job_function_type, shift_type, working_day, duplicate_function_type, first_clock, first_clock_time, last_clock, last_clock_buiten_site, number_of_clocks) %>%
     summarise(
-      bruto_working_hours          = sum(workhours),
-      tot_correction_early_arrival = sum(correction_early_arrival), 
-      correction_start_shift_ind   = max(correction_start_ind, na.rm = TRUE)
+      bruto_working_hours                          = sum(workhours),
+      tot_correction_early_arrival                 = sum(correction_early_arrival), 
+      correction_start_shift_ind                   = max(correction_start_ind, na.rm = TRUE),
+      working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),
+      first_name                                   = min(first_name),  
+      last_name                                    = min(last_name),   
+      contractor                                   = min(contractor)   
       ) %>%
     mutate(
       
       # Determine Work Break
       work_break                   = case_when(
-        bruto_working_hours <= p_work_break_min_threshhold                                                   ~ 0
-        bruto_working_hours > p_work_break_min_threshhold & bruto_working_hours <= p_work_break_threshhold   ~ p_work_break_small
-        TRUE                                                                                                 ~ p_work_break_normal
+        bruto_working_hours <= p_work_break_min_threshhold                                                   ~ 0,
+        bruto_working_hours > p_work_break_min_threshhold & bruto_working_hours <= p_work_break_threshhold   ~ p_work_break_small,
+        TRUE                                                                                                 ~ p_work_break_normal,
         ),
       
       # Determine Netto Working Hours
@@ -44,6 +48,15 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       
       ) %>% as.data.frame()
 
+# Check records
+   df_controle  <- gate %>%  filter(site_ind_gate_ind != 'Buiten site_UIT')
+   n_unique_ids <- nrow(unique(df_controle[,c('common_id','working_day')]))
+   
+   cat('Is number of unique ids equal to number of records data frame?', nrow(gate_agg) == n_unique_ids, '\n')
+   cat('number of records:', nrow(gate_agg), '\n')
+   cat('number of unique ids:', n_unique_ids, '\n')
+   
+  
 #------------------------------------------------------------------------------
 #  CORRECTION START KAN NIET OP AGGRAGATE WANT IEMAND KAN VOOR STARTSHIFT OOK WEER UITKLOKKEN  
 # determine correction_early_arrival
