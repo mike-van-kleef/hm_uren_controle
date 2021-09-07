@@ -41,6 +41,19 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
         TRUE                                                                       ~ datetime_check_in_out
         ),
       
+      # Determine deviating start shift
+      deviating_start_shift        = case_when(
+            shift_type == "dagshift" 
+        & ( first_clock_time <= (hms(p_shift_start_day) - hours(p_hour)) 
+          | first_clock_time >= (hms(p_shift_start_day) + hours(p_hour)))     ~ 'afwijkende shift',
+        
+            shift_type == "nachtshift" 
+        & ( first_clock_time <= (hms(p_shift_start_night) - hours(p_hour)) 
+            | first_clock_time >= (hms(p_shift_start_night) + hours(p_hour))) ~ 'afwijkende shift',
+        
+        TRUE                                                                  ~ 'normale shift'
+            
+      
       correction_start_ind = if_else(datetime_check_in_out_correction != datetime_check_in_out, 1, 0)
     ) %>%
     
