@@ -1,5 +1,5 @@
 AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_end_day, p_shift_end_night, p_hour, 
-                          p_work_break_threshhold, p_work_break_small, p_work_break_normal, p_work_break_min_threshhold){
+                          p_work_break_threshhold, p_work_break_small, p_work_break_normal, p_work_break_min_threshhold, p_change_of_dress_time){
   # This function aggregate the gate data to the level person, workday
   #
   # Args:
@@ -13,6 +13,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
   # - p_work_break_small          : parameter specifies time for small work break
   # - p_work_break_normal         : parameter specifies time for normal work break
   # - p_work_break_min_threshhold : parameter specifies the minimum threshhold. Below this threshold there is no work_break
+  # - p_change_of_dress_time      : parameter specifies time for changing of dress
   #
   # Returns:
   # - gate_agg: data frame with aggregated gate data
@@ -30,7 +31,9 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       bruto_working_hours                          = sum(workhours),
       tot_correction_early_arrival                 = sum(correction_early_arrival), 
       correction_start_shift_ind                   = max(correction_start_ind, na.rm = TRUE),
-      working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),
+      tot_correction_late_departed                 = sum(correction_late_departed), 
+      correction_end_shift_ind                     = max(correction_end_ind, na.rm = TRUE),
+      #working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),   ## LATER WEER AANZETTEN
       first_name                                   = min(first_name),  
       last_name                                    = min(last_name),   
       contractor                                   = min(contractor)   
@@ -44,8 +47,14 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
         TRUE                                                                                                 ~ p_work_break_normal,
         ),
       
+      # change_of_dress_time
+      change_of_dress_time        = case_when(
+        toupper(job_function_type) == "DIRECT"                                                               ~ p_change_of_dress_time,
+        TRUE                                                                                                 ~ 0
+      ),
+      
       # Determine Netto Working Hours
-      netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - work_break
+      netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - tot_correction_late_departed - work_break - change_of_dress_time
       
       ) %>% as.data.frame()
 
