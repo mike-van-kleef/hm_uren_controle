@@ -53,6 +53,8 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        full_name,
        last_name_gate                      = last_name,
        first_name_gate                     = first_name,
+       double_decl_same_day,
+       double_name_same_common_id,
        contractor_decl,
        job_function,
        job_function_type                   = job_function_type_direct_indirect,
