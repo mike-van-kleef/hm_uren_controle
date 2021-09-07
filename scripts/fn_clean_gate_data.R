@@ -113,12 +113,7 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
       check_first_before_last_ind = case_when(
         is.na(last_clock_buiten_site)                                     ~ 'UNKNOWN',
         difftime(last_clock_buiten_site,first_clock, units = "hours") < 0 ~ 'Nee',
-        TRUE                                                              ~ 'Ja'),
-      
-      working_days_without_checkout_correction_ind = case_when(
-        check_first_before_last_ind == 'UNKNOWN' & workhours >= 8 & lead(workhours) >= 12 ~ 1,
-        TRUE                                                                              ~ 0
-        )
+        TRUE                                                              ~ 'Ja')
     )
 
 
