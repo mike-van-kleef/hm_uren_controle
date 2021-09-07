@@ -48,14 +48,23 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
 # Name contractor  
   data$contractor_decl = 'Bilfinger Maintenance'
   
+  
+
 # NOG AANPASSEN IN BESTAND
   data <- data %>%
     mutate(
+      
       common_id = case_when(
         full_name == 'Rodriquez, Pieter Jose Frederik Jan'~ '27021967RODR',
         full_name == 'Wisniewski, Marcin'                 ~ '11041981WISN',
-        TRUE                                              ~  common_id)
+        TRUE                                              ~  common_id),
+      
+      job_function_type = case_when(
+        job_function == 'fitter'                          ~ 'Indirect',
+        TRUE                                              ~ job_function_type
+      )
     )
+
     
 return(data)  
   
