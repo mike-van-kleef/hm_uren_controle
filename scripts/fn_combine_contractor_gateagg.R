@@ -2,9 +2,9 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
   # This function combines the contractor data with the gata data on workday level
   #
   # Args:
-  # - contractors : data frame with contractors data, in the form of output function .........
-  # - gate_agg    : data frame with aggregated gate data on workday level, in the form of output function AggregateGate
-  # - employee    : data frame with employee data from the different contractors, in the form of output function ......
+  # - contractors         : data frame with contractors data, in the form of output function .........
+  # - gate_agg            : data frame with aggregated gate data on workday level, in the form of output function AggregateGate
+  # - employee            : data frame with employee data from the different contractors, in the form of output function ......
   #
   # Returns:
   # - hours_check_employee_working_day: data frame with contractors data and gate data at the level employee, working day
@@ -44,8 +44,15 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
     ) %>%
     
     mutate(
-      delta_declaration_vs_bruto_hours = round(decl_working_hours - bruto_working_hours,2),
-      delta_declaration_vs_netto_hours = round(decl_working_hours - netto_working_hours,2)
+      delta_decl_vs_bruto_hours = round(decl_working_hours - bruto_working_hours,2),
+      delta_decl_vs_netto_hours = round(decl_working_hours - netto_working_hours,2),
+      
+      remark = case_when(
+        common_id             == 'XXXX'                                          ~ 'Employee not found',
+        netto_working_hours   == 0                                               ~ 'No Gate clockings',
+        deviating_start_shift == 'afwijkende shift'                              ~ 'Afwijkende shift', 
+        TRUE                                                                     ~ ''
+      )                       
     ) %>%
 
      select(
@@ -53,6 +60,7 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        full_name,
        last_name_gate                      = last_name,
        first_name_gate                     = first_name,
+       remark,
        double_decl_same_day,
        double_name_same_common_id,
        contractor_decl,
@@ -67,12 +75,11 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        tot_correction_early_arrival,
        work_break,
        netto_working_hours,
-       delta_declaration_vs_bruto_hours,
-       delta_declaration_vs_netto_hours,
+       delta_decl_vs_bruto_hours,
+       delta_decl_vs_netto_hours,
        first_clock,
        last_clock_buiten_site,
        working_days_without_checkout_correction_ind
-       #remark
        
      )
     
