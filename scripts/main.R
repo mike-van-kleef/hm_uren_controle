@@ -130,10 +130,33 @@ library(lubridate)
   df_agg.hours_check_employee             <- EmployeeCheckAgg(hours_check_employee_working_day = df_agg.hours_check_employee_working_day)  
   
   
-
+# prepare view for the audit of gate data
+  list.audit_gate                           <- PrepareAuditView(gate = df.gate_correction, employee = df.employee)
+ 
   
+# export files --------------------------------------------------------------------------------------------------------------------------------------
   
+# path results
+  filepath <- "./results/"
+    
+# export urencontrole_werkdag 
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_urencontrole_werkdag.csv')
+  write.csv2(df_agg.hours_check_employee_working_day, paste0(filepath,filename), row.names = FALSE)      
         
+# export urencontrole_medewerker  
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_urencontrole_medewerker.csv')
+  write.csv2(df_agg.hours_check_employee, paste0(filepath,filename), row.names = FALSE)        
+
+# export audit_view_gate_Bilfinger_Maintenance  
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_Bilfinger_Maintenance.csv')
+  write.csv2(list.audit_gate$Bilfinger_Maintenance, paste0(filepath,filename), row.names = FALSE)        
+  
+
+# export audit_view_gate_all
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_all.csv')
+  write.csv2(list.audit_gate$All, paste0(filepath,filename))        
+  
+    
 # test
   med = unique(df.bf_staging[,c('common_id','job_function')])
   med = med[is.na(med$common_id) == TRUE,]
@@ -157,8 +180,9 @@ library(lubridate)
   z3 = z[is.na(z$first_name) == FALSE,]  
   
 # write.csv2(z2, "analyse/Bilfinger_unknown_persons.csv")  
-# write.csv2(df_agg.hours_check_employee_working_day, "results/urencontrole_werkdag.csv")    
+
 # write.csv2(df_agg.hours_check_employee, "results/urencontrole_medewerker.csv")      
+# write.csv2(list.audit_gate$Bilfinger_Maintenance, "results/audit_view_gate_Bilfinger_Maintenance.csv")      
 
-
+  
   
