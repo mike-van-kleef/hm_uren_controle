@@ -32,8 +32,17 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
     group_by(common_id) %>%
     mutate(
       duplicated_person                     = n_distinct(full_name)
-    ) %>%
-    ungroup() %>% as.data.frame()
+    ) %>% ungroup() %>% 
+    mutate(
+      remark = case_when(
+        common_id               == 'XXXX'                                        ~ 'Employee not found',
+        tot_netto_working_hours == 0                                             ~ 'Employee found - no gate clocking for period',
+        TRUE                                                                     ~ ''
+      )
+    ) %>% as.data.frame()
+  
+  
+  
   
 
     
