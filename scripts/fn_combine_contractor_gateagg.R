@@ -47,16 +47,24 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
     
     mutate(
       delta_decl_vs_bruto_hours = round(decl_working_hours - bruto_working_hours,2),
-      delta_decl_vs_netto_hours = round(decl_working_hours - netto_working_hours,2),
-      
+      delta_decl_vs_netto_hours = round(decl_working_hours - netto_working_hours,2)
+      ) %>%
+   
+    group_by(common_id) %>%
+    mutate(
+      tot_netto_working_hours = sum(netto_working_hours)
+    ) %>% ungroup() %>%
+    
+    mutate(
       remark = case_when(
-        common_id             == 'XXXX'                                          ~ 'Employee not found',
-        netto_working_hours   == 0                                               ~ 'No Gate clockings',
-        deviating_start_shift == 'afwijkende shift'                              ~ 'Afwijkende shift', 
+        common_id               == 'XXXX'                                        ~ 'Employee not found',
+        tot_netto_working_hours == 0                                             ~ 'Employee found - no gate clocking for period',
+        netto_working_hours     == 0                                             ~ 'No gate clockings for workday',
+        deviating_start_shift   == 'afwijkende shift'                            ~ 'Deviating shift', 
         TRUE                                                                     ~ ''
-      )                       
-    ) %>%
-
+        )
+      ) %>%
+    
      select(
        common_id,
        full_name,
