@@ -25,6 +25,8 @@ PrepareAuditView <- function(gate, employee){
       datetime_check_in_out,
       time_check_in_out,
       workhours,
+      working_days_without_checkout_correction_ind,
+      correction_workhours_no_check_out,
       datetime_check_in_out_correction,
       correction_early_arrival,
       datetime_check_in_out_correction_end,
