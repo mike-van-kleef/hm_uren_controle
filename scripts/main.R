@@ -11,21 +11,22 @@
 # PARAMETERS -------------------------------------------------------------------  
 
 # Parameters
-p_select_period             <- TRUE                                    # specifies whether data is selected over a period of time
-p_period_start              <- as.Date('2021-03-14')                   # specifies the start date of the period
-p_period_end                <- as.Date('2021-06-02')                   # specifies the end date of the period
-p_workday_split             <- 6                                       # specifies the split. work hours for the split are counted on the previous day
-p_shift_start_day           <- format("07:00:00", format = "%H:%M:%S") # specifies the start of day shift
-p_shift_start_night         <- format("18:00:00", format = "%H:%M:%S") # specifies the start of night shift
-p_shift_end_day             <- format("17:15:00", format = "%H:%M:%S") # specifies the start of day shift
-p_shift_end_night           <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
-p_hour                      <- 2                                       # specifies the range for correction of workinghours for being early or late.
-p_work_break_min_threshhold <- 2                                       # specifies the minimum threshhold. Below this threshold there is no work_break
-p_work_break_threshhold     <- 4                                       # specifies the threshhold for small or normal work break
-p_work_break_small          <- 0.25                                    # specifies time for small work break
-p_work_break_normal         <- 0.75                                    # specifies time for normal work break
-p_change_of_dress_time      <- 0.25                                    # specifies time for changing of dress
-p_hour_threshold            <- 15                                      # specifies maximum hours between two clockings. This exceeds if there is no Clocking out from sote (Buiten site_UIT)
+p_select_period              <- TRUE                                    # specifies whether data is selected over a period of time
+p_period_start               <- as.Date('2021-03-14')                   # specifies the start date of the period
+p_period_end                 <- as.Date('2021-06-02')                   # specifies the end date of the period
+p_workday_split              <- 6                                       # specifies the split. work hours for the split are counted on the previous day
+p_shift_start_day            <- format("07:00:00", format = "%H:%M:%S") # specifies the start of day shift
+p_shift_start_night          <- format("18:00:00", format = "%H:%M:%S") # specifies the start of night shift
+p_shift_end_day              <- format("17:15:00", format = "%H:%M:%S") # specifies the start of day shift
+p_shift_end_night            <- format("04:15:00", format = "%H:%M:%S") # specifies the start of night shift
+p_hour                       <- 2                                       # specifies the range for correction of workinghours for being early or late.
+p_work_break_min_threshhold  <- 2                                       # specifies the minimum threshhold. Below this threshold there is no work_break
+p_work_break_threshhold      <- 4                                       # specifies the threshhold for small or normal work break
+p_work_break_small           <- 0.25                                    # specifies time for small work break
+p_work_break_normal          <- 0.75                                    # specifies time for normal work break
+p_change_of_dress_time       <- 0.25                                    # specifies time for changing of dress
+p_hour_threshold             <- 20                                      # specifies maximum hours in one shift. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
+p_hour_threshold_after_eight <- 12                                      # specifies maximum hours after a clocking of 8 workhours. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
 
 
 
@@ -108,7 +109,9 @@ library(lubridate)
   df.gate_correction       <- CorrectionHours(data = df.gate_clean_employee,
                                               p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
                                               p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-                                              p_hour = p_hour)
+                                              p_hour            = p_hour           , p_hour_threshold    = p_hour_threshold,
+                                              p_hour_threshold_after_eight = p_hour_threshold_after_eight
+                                              )
   
 
 # aggregate gate data to day 
