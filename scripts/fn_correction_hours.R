@@ -141,36 +141,29 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
   
 # Correction Working_days without Buiten site_UIT  -----------------------------------------------------------------------------------------    
   data <- data %>%
-    # group_by(common_id) %>%
-    # mutate(
-    #   last_position          = if_else(is.na(lead(time_check_in_out)) == TRUE, 1, 0),
-    #   next_time_check_in_out = if_else(is.na(lead(time_check_in_out)) == TRUE, time_check_in_out, lead(time_check_in_out))
-    # ) %>% ungroup() %>%
+    group_by(common_id) %>%
+    mutate(
+      last_position          = if_else(is.na(lead(date_check_in_out)) == TRUE, 1, 0),
+      next_time_check_in_out = if_else(is.na(lead(time_check_in_out)) == TRUE, time_check_in_out, lead(time_check_in_out)),
+      next_date_check_in_out  = lead(date_check_in_out)
+    ) %>% ungroup() %>%
     mutate(
       working_days_without_checkout_correction_ind = case_when(
-        # shift_type == "dagshift"
-        # & first_clock_time >= (hms(p_shift_start_day) - hours(p_hour))
-        # & first_clock_time <   hms(p_shift_start_day)
-        # & last_position == 0
-        # & hms(time_check_in_out)       <  hms(p_shift_end_day)
-        # & hms(next_time_check_in_out)  >  (hms(p_shift_end_day)  + hours(p_hour))
-        # & workhours >= 10                                                                        ~ 1,
-        # 
-        # shift_type == "nachtshift"
-        # & first_clock_time >= (hms(p_shift_start_night) - hours(p_hour))
-        # & first_clock_time <   hms(p_shift_start_night)
-        # & is.na(next_time_check_in_out) == FALSE
-        # & last_position == 0
-        # & hms(time_check_in_out)      <  hms(p_shift_end_night)
-        # & hms(next_time_check_in_out) >  (hms(p_shift_end_night)  + hours(p_hour))
-        # & workhours >= 10                                                                        ~ 2, 
-        
         
         lag(workhours) >= 6 & lag(workhours) <= 12 & workhours > p_hour_threshold_after_eight    ~ 1,
         workhours > p_hour_threshold                                                             ~ 2,
         workhours > p_hour_threshold_after_eight & lead(workhours) >= 6 & lead(workhours) <= 12  ~ 3,
         
-
+        shift_type == "dagshift"
+        & first_clock_time        >= (hms(p_shift_start_day) - hours(p_hour))
+        & first_clock_time        <   hms(p_shift_start_day)
+        & last_position           == 0
+        & hms(time_check_in_out)  <  hms(p_shift_end_day)
+        & next_date_check_in_out  >= date_check_in_out + 1
+        & current_next_in_out     == 'IN_IN'
+        & workhours               >= 10                                                          ~ 4,
+        
+  
         TRUE                                                                                     ~ 0
         ),
        
@@ -190,7 +183,7 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
       
       
       workhours_no_check_out            = as.numeric(round(difftime( datetime_correction_no_check_out, datetime_check_in_out , units = "hours"),3)),
-      correction_workhours_no_check_out = if_else(workhours_no_check_out == 0, 0, workhours - workhours_no_check_out),
+      correction_no_check_out           = if_else(workhours_no_check_out == 0, 0, workhours - workhours_no_check_out),
   ) %>% as.data.frame()
    
 return(data)
