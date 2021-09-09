@@ -29,7 +29,7 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
       date_work           = as.Date(as.numeric(date_work), origin = '1970-01-01'),
       common_id           = trimws(toupper(common_id)),
       decl_working_hours  = as.numeric(decl_working_hours),
-      job_function        = trimws(job_function)
+      job_function        = tolower(trimws(job_function))
     ) %>%
     as.data.frame()
 
@@ -40,7 +40,7 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
 # clean job function
   job_function <- job_function %>%
     mutate(
-      job_function      = trimws(job_function),
+      job_function      = tolower(trimws(job_function)),
       job_function_type = trimws(job_function_type)
     )
   
@@ -73,15 +73,9 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
         ),
       
       job_function = case_when(
-        common_id == '01111978ORCU'                       ~ 'Foreman',
+        common_id == '01111978ORCU'                       ~ 'foreman',
         TRUE                                              ~ job_function
-      ),
-      
-      job_function_type = case_when(
-        job_function == 'fitter'                          ~ 'Indirect',
-        common_id    == '01111978ORCU'                    ~ 'Indirect',
-        TRUE                                              ~ job_function_type
-      )
+       )
     )
 
     
