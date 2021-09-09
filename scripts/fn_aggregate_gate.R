@@ -29,11 +29,13 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
              first_clock, first_clock_time, last_clock, last_clock_buiten_site, deviating_start_shift, number_of_clocks) %>%
     summarise(
       bruto_working_hours                          = sum(workhours),
+      tot_correction_workhours_no_check_out        = sum(correction_workhours_no_check_out),
+      bruto_working_hours_with_correction          = sum(workhours - correction_workhours_no_check_out),
       tot_correction_early_arrival                 = sum(correction_early_arrival), 
       correction_start_shift_ind                   = max(correction_start_ind, na.rm = TRUE),
       tot_correction_late_departed                 = sum(correction_late_departed), 
       correction_end_shift_ind                     = max(correction_end_ind, na.rm = TRUE),
-      #working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),   ## LATER WEER AANZETTEN
+      working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),   
       first_name                                   = min(first_name),  
       last_name                                    = min(last_name),   
       contractor                                   = min(contractor)   
@@ -41,20 +43,20 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
     mutate(
       
       # Determine Work Break
-      work_break                   = case_when(
-        bruto_working_hours <= p_work_break_min_threshhold                                                   ~ 0,
-        bruto_working_hours > p_work_break_min_threshhold & bruto_working_hours <= p_work_break_threshhold   ~ p_work_break_small,
-        TRUE                                                                                                 ~ p_work_break_normal,
+      work_break            = case_when(
+        bruto_working_hours_with_correction <= p_work_break_min_threshhold                                                                   ~ 0,
+        bruto_working_hours_with_correction > p_work_break_min_threshhold & bruto_working_hours_with_correction <= p_work_break_threshhold   ~ p_work_break_small,
+        TRUE                                                                                                                                 ~ p_work_break_normal,
         ),
       
       # change_of_dress_time
-      change_of_dress_time        = case_when(
-        toupper(job_function_type) == "DIRECT"                                                               ~ p_change_of_dress_time,
-        TRUE                                                                                                 ~ 0
+      change_of_dress_time  = case_when(
+        toupper(job_function_type) == "DIRECT"                                   ~ p_change_of_dress_time,
+        TRUE                                                                     ~ 0
       ),
       
       # Determine Netto Working Hours
-      netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - tot_correction_late_departed - work_break - change_of_dress_time
+      netto_working_hours          = bruto_working_hours_with_correction - tot_correction_early_arrival - tot_correction_late_departed - work_break - change_of_dress_time
       
       ) %>% as.data.frame()
 
