@@ -1,4 +1,5 @@
-CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shift_end_day, p_shift_end_night, p_hour, p_hour_threshold, p_hour_threshold_after_eight){
+CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shift_end_day, p_shift_end_night, p_hour, p_hour_threshold, p_hour_threshold_after_eight,
+                            p_start_commissioning, p_end_commissioning){
   # This function corrects workhours for direct employees for being early. Employees can only start when shift starts
   #               corrects workhours for direct employees for departing lately. Employees can only work during shift
   #               corrects workhours for employees who didn't check out at the gate.
@@ -12,12 +13,15 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
   # - p_hour                       : parameter specifies the range for correction of working hours for being early or late.
   # - p_hour_threshold             : parameter specifies maximum hours in one shift. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
   # - p_hour_threshold_after_eight : parameter specifies maximum hours after a clocking of 8 workhours. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
+  # - p_start_commissioning        : specifies the start date of the commissioning. Between this period no corrections because of standby of employees
+  # - p_end_commissioning          : specifies the end date of the commissioning. Between this period no corrections because of standby of employees
   #
   # Returns:
   # - data: data frame with gate data with the correction for early arrival
   #
 
-
+# working day is not in the commissioning period
+  data$commissioning_ind <- if_else(data$working_day >= p_start_commissioning & data$working_day <= p_end_commissioning, 1, 0 )
   
 # Correction Early Arrival  -------------------------------------------------------------------------------------------------------------
   
@@ -35,6 +39,7 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
 
         # correction for direct personal - dayshift
         toupper(job_function_type) == "DIRECT" & shift_type == "dagshift"
+        & commissioning_ind == 0
         & first_clock_time >= (hms(p_shift_start_day) - hours(p_hour))
         & first_clock_time <   hms(p_shift_start_day)
         & hms(time_check_in_out) >=(hms(p_shift_start_day) - hours(p_hour))
@@ -42,6 +47,7 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
 
         # correction for direct personal nightshift
           toupper(job_function_type) == "DIRECT" & shift_type == "nachtshift"
+        & commissioning_ind == 0
         & first_clock_time >= (hms(p_shift_start_night) - hours(p_hour))
         & first_clock_time <   hms(p_shift_start_night)
         & hms(time_check_in_out) >= (hms(p_shift_start_night) - hours(p_hour))
@@ -102,6 +108,7 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
         
         # correction for direct personal - dayshift
         toupper(job_function_type) == "DIRECT" & shift_type == "dagshift"
+        & commissioning_ind == 0
         & last_clock_time_buiten_site >    hms(p_shift_end_day) 
         & last_clock_time_buiten_site <= ( hms(p_shift_end_day) + hours(p_hour)) 
         & hms(time_check_in_out) >     hms(p_shift_end_day)
@@ -109,6 +116,7 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
         
         # correction for direct personal - nightshift
         toupper(job_function_type) == "DIRECT" & shift_type == "nachtshift"
+        & commissioning_ind == 0
         & last_clock_time_buiten_site >    hms(p_shift_end_night) 
         & last_clock_time_buiten_site <= ( hms(p_shift_end_night) + hours(p_hour)) 
         & hms(time_check_in_out) >    hms(p_shift_end_night) 
@@ -156,14 +164,14 @@ CorrectionHours <- function(data, p_shift_start_day, p_shift_start_night, p_shif
         
         shift_type == "dagshift"
         & first_clock_time        >= (hms(p_shift_start_day) - hours(p_hour))
-        & first_clock_time        <   hms(p_shift_start_day)
+        & first_clock_time        <  (hms(p_shift_start_day) + hours(p_hour))
         & last_position           == 0
         & hms(time_check_in_out)  <  hms(p_shift_end_day)
         & next_date_check_in_out  >= date_check_in_out + 1
         & current_next_in_out     == 'IN_IN'
         & workhours               >= 10                                                          ~ 4,
         
-  
+
         TRUE                                                                                     ~ 0
         ),
        
