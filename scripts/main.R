@@ -27,6 +27,8 @@ p_work_break_normal          <- 0.75                                    # specif
 p_change_of_dress_time       <- 0.25                                    # specifies time for changing of dress
 p_hour_threshold             <- 20                                      # specifies maximum hours in one shift. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
 p_hour_threshold_after_eight <- 12                                      # specifies maximum hours after a clocking of 8 workhours. If this exceeds there is a suspicion of no Clocking out from site (Buiten site_UIT)
+p_start_commissioning        <- as.Date('2021-05-05')                   # specifies the start date of the commissioning. Between this period no corrections because of standby of employees
+p_end_commissioning          <- as.Date('2021-05-10')                   # specifies the end date of the commissioning. Between this period no corrections because of standby of employees
 
 
 
@@ -66,10 +68,13 @@ library(lubridate)
 
   
 # load function data (staging)  
-  file_map                <- 'data/raw/reference/'
-  file_name               <- paste0(file_map,"job_function.xlsx")
-  df.job_function_staging <- import_files(p.meta = FALSE, filename = file_name, sheet.nr =1, skip_rows = 0 )  
+  file_map                   <- 'data/raw/reference/'
+  file_name                  <- paste0(file_map,"job_function_bilfinger.xlsx")
+  df.job_function_bf_staging <- import_files(p.meta = FALSE, filename = file_name, sheet.nr =1, skip_rows = 0 )  
   
+  file_map                   <- 'data/raw/reference/'
+  file_name                  <- paste0(file_map,"job_function_mourik.xlsx")
+  df.job_function_mourik_staging <- import_files(p.meta = FALSE, filename = file_name, sheet.nr =1, skip_rows = 0 )  
     
 # load contractor data (staging)
   file_map                <-  'data/raw/contractors/'
@@ -77,7 +82,15 @@ library(lubridate)
   file_name               <- paste0(file_map,"Bilfinger Maintenance.xlsm")
   df.bf_staging           <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 2)
   
-
+  file_map                <-  'data/raw/contractors/'
+  meta_file               <- paste0(file_map,"meta_mourik_personeel.xlsx")
+  file_name               <- paste0(file_map,"Mourik.xlsx")
+  df.mourik_pers_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 1)
+  
+  file_map                <-  'data/raw/contractors/'
+  meta_file               <- paste0(file_map,"meta_mourik_mint.xlsx")
+  file_name               <- paste0(file_map,"Mourik.xlsx")
+  df.mourik_mint_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =2, skip_rows = 2)
   
 # Clean Data   ----------------------------------------------------------------      
 # clean gate data
@@ -85,15 +98,24 @@ library(lubridate)
                                              p_select_period = p_select_period, p_gate_data_start = p_period_start, p_gate_data_end = p_period_end)
 
 # clean bilfinger data
-  df.bilfinger_clean        <- CleanBilfingerData(data = df.bf_staging, job_function = df.job_function_staging)  
+  df.bilfinger_clean        <- CleanBilfingerData(data = df.bf_staging, job_function = df.job_function_bf_staging)  
+
+# clean Mourik data
+  df.mourik_pers_clean      <- CleanMourikData(data = df.mourik_pers_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_Personeel')  
+  df.mourik_mint_clean      <- CleanMourikData(data = df.mourik_mint_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_International' )  
+
+# combine bothe data frames and aggregate 
+  df.mourik_clean      <- CombineMourikData(pers = df.mourik_pers_clean, mint = df.mourik_mint_clean)
   
-  # select bilfinger data for given time horizon. Only if (p_select_period == TRUE
+  # select data for given time horizon. Only if (p_select_period == TRUE
   if (p_select_period == TRUE){
     df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
+    df.mourik_clean         <- df.mourik_clean[df.mourik_clean$date_work >= p_period_start & df.mourik_clean$date_work <= p_period_end,]
   }
 
   
 # combine contractors  ####### Nog andere contractors toevoegen #####
+  #df.contractor            <- CombineContractors(bilfinger = df.bilfinger_clean, mourik = df.mourik_clean)
   df.contractor            <- df.bilfinger_clean
   
 
@@ -107,10 +129,11 @@ library(lubridate)
 
 # correction on hours for early arrival and the hours after end shift   
   df.gate_correction       <- CorrectionHours(data = df.gate_clean_employee,
-                                              p_shift_start_day = p_shift_start_day, p_shift_start_night = p_shift_start_night,
-                                              p_shift_end_day   = p_shift_end_day  , p_shift_end_night   = p_shift_end_night,
-                                              p_hour            = p_hour           , p_hour_threshold    = p_hour_threshold,
-                                              p_hour_threshold_after_eight = p_hour_threshold_after_eight
+                                              p_shift_start_day = p_shift_start_day         , p_shift_start_night   = p_shift_start_night,
+                                              p_shift_end_day   = p_shift_end_day           , p_shift_end_night     = p_shift_end_night,
+                                              p_hour            = p_hour                    , p_hour_threshold      = p_hour_threshold,
+                                              p_hour_threshold_after_eight = p_hour_threshold_after_eight,
+                                              p_start_commissioning = p_start_commissioning , p_end_commissioning   = p_end_commissioning
                                               )
   
 
@@ -169,20 +192,23 @@ library(lubridate)
   df.gate_clean[df.gate_clean$common_id == '03081988AAZZ', !colnames(df.gate_clean) %in% c('remark')]
   df.bf_staging[df.bf_staging$Code_ID == '03081988AAZZ',]
   
-  m =unique(df.bilfinger_clean[,c('full_name','firma','common_id','decl_total_working_hours','tarif')])
+  #m =unique(df.bilfinger_clean[,c('full_name','firma','common_id','decl_total_working_hours','tarif')])
+  m =unique(df.mourik_clean[,c('full_name','common_id')])
   m = m[is.na(m$full_name) == FALSE,]
   p = unique(df.gate_clean[,c('common_id','first_name','last_name','contractor','date_birth')])
 
   z = left_join(m,p, by = c('common_id'='common_id'))  
-  z2 = z[is.na(z$first_name) == TRUE,] %>%
-    select(-c('first_name','last_name','contractor','date_birth')) %>%
-    mutate(
-      total_cost = decl_total_working_hours * tarif
-    )
+  z2 = z[is.na(z$first_name) == TRUE,] 
+  # %>%
+  #   select(-c('first_name','last_name','contractor','date_birth')) %>%
+  #   mutate(
+  #     total_cost = decl_total_working_hours * tarif
+  #   )
   
   z3 = z[is.na(z$first_name) == FALSE,]  
   
 # write.csv2(z2, "analyse/Bilfinger_unknown_persons.csv")  
+# write.csv2(z2, "Mourik_unknown_persons.csv")  
 
 # write.csv2(df_agg.hours_check_employee, "results/urencontrole_medewerker.csv")      
 # write.csv2(list.audit_gate$Bilfinger_Maintenance, "results/audit_view_gate_Bilfinger_Maintenance.csv")      
