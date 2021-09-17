@@ -50,6 +50,7 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
       tot_correction_early_arrival          = if_else(is.na(tot_correction_early_arrival)          == TRUE, 0, tot_correction_early_arrival),
       tot_correction_late_departed          = if_else(is.na(tot_correction_late_departed)          == TRUE, 0, tot_correction_late_departed),
       work_break                            = if_else(is.na(work_break)                            == TRUE, 0, work_break),
+      work_break_cor_off_site               = if_else(is.na(work_break_cor_off_site)               == TRUE, 0, work_break_cor_off_site),
       change_of_dress_time                  = if_else(is.na(change_of_dress_time)                  == TRUE, 0, change_of_dress_time),
       netto_working_hours                   = if_else(is.na(netto_working_hours)                   == TRUE, 0, netto_working_hours),
     ) %>%
@@ -76,13 +77,33 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
         )
       ) %>%
     
+    group_by(common_id) %>%
     mutate(
-      netto_working_hours_cor = case_when(
-           is.na(double_decl_same_day)  == TRUE                                  # (persoon komt niet voor in declaratieoverzicht)
+      netto_cor_ind           = case_when(
+        is.na(double_decl_same_day)  == TRUE                                                            # (persoon komt niet voor in declaratieoverzicht)
         &  decl_working_hours == 0
-        &  remark != 'Deviating shift'                                           ~ 0,
-           
-           TRUE                                                                  ~ netto_working_hours
+        &  remark != 'Deviating shift'                                                        ~ 1,
+        
+        is.na(double_decl_same_day)  == TRUE                                                            # (persoon komt niet voor in declaratieoverzicht)
+        &  remark == 'Deviating shift'                                           
+        &  delta_decl_vs_netto_hours < 0
+        &  !(
+              (if_else(is.na(lag(delta_decl_vs_netto_hours)) ,FALSE, lag(delta_decl_vs_netto_hours)  > 2)
+              & lag(date_work) == (date_work - 1)
+              )
+            | (if_else(is.na(lead(delta_decl_vs_netto_hours)),FALSE, lead(delta_decl_vs_netto_hours) > 2)
+              & lead(date_work) == (date_work + 1)
+              )
+        )                                                                                     ~ 2,
+        
+        TRUE                                                                                  ~ 0
+      )
+    )  %>% ungroup() %>%
+    
+    mutate(
+       netto_working_hours_cor = case_when(
+         netto_cor_ind >= 1                                                                   ~ 0,
+         TRUE                                                                                 ~ netto_working_hours
       ),
       
       delta_decl_vs_netto_hours_cor   = round(decl_working_hours - netto_working_hours_cor,2)
@@ -105,7 +126,9 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        shift_type,
        decl_total_working_days,
        decl_working_hours,
+       delta_last_first_clock,
        tot_hours_on_site,
+       tot_hours_off_site,
        working_days_without_checkout_correction_ind,
        tot_correction_no_check_out,
        bruto_working_hours,
@@ -114,6 +137,7 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        correction_end_shift_ind,
        tot_correction_late_departed,
        work_break,
+       work_break_cor_off_site,
        change_of_dress_time,
        netto_working_hours,
        netto_working_hours_cor,
@@ -121,9 +145,11 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        delta_decl_vs_netto_hours,
        delta_decl_vs_netto_hours_cor,
        first_clock,
+       first_clock_hour,
        last_clock_buiten_site,
-       employee_clocking_without_decl
-       
+       employee_clocking_without_decl,
+       netto_cor_ind,
+       commissioning_ind
        
      ) %>% as.data.frame()
     
