@@ -1,8 +1,8 @@
 CleanBilfingerData <- function(data, job_function = ""){
-  # This function cleans the gate data 
+  # This function cleans the declaration data 
   #
   # Args:
-  # - data: data frame with gate data, in the form of output function import_files
+  # - data: data frame with declaration data, in the form of output function import_files
   # - func: data frame with job_function data, in the form of output function import_files
   #
   # Returns:
