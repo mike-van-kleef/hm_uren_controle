@@ -42,7 +42,7 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
       bruto_working_hours                     = sum(bruto_working_hours),
       tot_correction_early_arrival            = sum(tot_correction_early_arrival),
       tot_correction_late_departed            = sum(tot_correction_late_departed),
-      tot_work_break                          = sum(work_break),
+      tot_work_break                          = sum(work_break_cor_off_site),
       tot_change_of_dress_time                = sum(change_of_dress_time),
       tot_netto_working_hours                 = sum(netto_working_hours),
       tot_netto_working_hours_cor             = sum(netto_working_hours_cor),
@@ -51,6 +51,7 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
       tot_delta_decl_vs_netto_hours_cor       = sum(delta_decl_vs_netto_hours_cor)
     ) %>% 
     mutate(
+      tot_delta_decl_vs_netto_hours_pos       = if_else(tot_delta_decl_vs_netto_hours_cor < 0, 0, tot_delta_decl_vs_netto_hours_cor),
       remark = case_when(
         common_id               == 'XXXX'                                        ~ 'Employee not found',
         tot_netto_working_hours == 0                                             ~ 'Employee found - no gate clocking for period',
