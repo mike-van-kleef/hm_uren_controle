@@ -26,7 +26,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
   gate_agg <- gate %>%
     filter(site_ind_gate_ind != 'Buiten site_UIT') %>%
     group_by(common_id, common_id_unique_ind, job_function_type, shift_type, working_day, duplicate_function_type, 
-             first_clock, first_clock_time, last_clock, last_clock_buiten_site, deviating_start_shift, number_of_clocks) %>%
+             first_clock, first_clock_time, first_clock_hour, last_clock, last_clock_buiten_site, deviating_start_shift, number_of_clocks, commissioning_ind) %>%
     summarise(
       tot_hours_on_site                            = sum(workhours),
       tot_correction_no_check_out                  = sum(correction_no_check_out),
@@ -41,6 +41,9 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       contractor                                   = min(contractor)   
       ) %>%
     mutate(
+      delta_last_first_clock                       = round(as.numeric(difftime(last_clock_buiten_site,first_clock, units = "hours")),3),
+      tot_hours_off_site                           = if_else( (is.na(delta_last_first_clock) == TRUE | delta_last_first_clock < 0 | delta_last_first_clock < tot_hours_on_site)
+                                                             , 99999, delta_last_first_clock - tot_hours_on_site),
       
       # Determine Work Break
       work_break            = case_when(
@@ -49,6 +52,8 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
         TRUE                                                                                                             ~ p_work_break_normal,
         ),
       
+      work_break_cor_off_site  = pmax((work_break - tot_hours_off_site), 0),
+      
       # change_of_dress_time
       change_of_dress_time  = case_when(
         toupper(job_function_type) == "DIRECT"                                   ~ p_change_of_dress_time,
@@ -56,7 +61,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       ),
       
       # Determine Netto Working Hours
-      netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - tot_correction_late_departed - work_break - change_of_dress_time
+      netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - tot_correction_late_departed - work_break_cor_off_site - change_of_dress_time
       
       ) %>% as.data.frame()
 
