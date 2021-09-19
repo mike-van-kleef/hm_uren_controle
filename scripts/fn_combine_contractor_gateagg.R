@@ -127,7 +127,9 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
         )                                                                                     ~ 2,
         
         TRUE                                                                                  ~ 0
-      )
+      ),
+      
+      check_neg_decl             = max(if_else(netto_cor_ind == 0 & delta_decl_vs_netto_hours < -3, 1,0))
     )  %>% ungroup() %>%
     
     mutate(
