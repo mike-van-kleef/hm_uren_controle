@@ -16,20 +16,50 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
   # Keep only gate data which matches the employees from the different contractors
   gate_agg <- gate_agg[gate_agg$common_id %in% employee$common_id,]
   
+
+### Add the declaration hours for different contractors  -----------------------------------------------------------------
+#   when employee is active for different contractors on the same day. Add the declaration hours  
   
-  # Last Date at Work
-  contractor <- contractor %>%
+  # employee with common_id  
+  # One job_function_type and one name for each common_id
+  contractor_with_id <- contractor %>%
+    filter(common_id != 'XXXX') %>%
     group_by(common_id) %>%
     mutate(
-      # first_work_day_contractor         = min(date_work), 
-      # last_work_day_contractor          = max(date_work),
-      job_function_type_direct_indirect = max(job_function_type)  # Indirect gaat voor Direct
+      job_function_type_direct_indirect = max(job_function_type),  # Indirect gaat voor Direct,
+      full_name                         = max(full_name, na.rm = TRUE)
     ) %>%
     select(-c(job_function_type)) %>%
-    ungroup %>% as.data.frame()
+    ungroup() %>%
+    group_by(common_id, full_name, date_work, job_function_type_direct_indirect) %>%
+    summarise(
+      job_function               = min(job_function),
+      double_decl_same_day       = min(double_decl_same_day),
+      double_name_same_common_id = max(double_name_same_common_id),
+      decl_total_working_days    = sum(decl_total_working_days),
+      decl_working_hours         = sum(decl_working_hours),
+      number_of_contractors      = n_distinct(contractor_decl),
+      contractor_decl            = if_else( max(contractor_decl) == min(contractor_decl), max(contractor_decl) , 'Multiple Contractors'),
+    ) %>% as.data.frame()
   
 
-  hours_check_employee_working_day  <- contractor %>%
+  # employee without common_id
+  contractor_no_id <- contractor %>%    
+    filter(common_id == 'XXXX') %>%
+    group_by(common_id) %>%
+    mutate(
+      job_function_type_direct_indirect = max(job_function_type),  # Indirect gaat voor Direct,
+      number_of_contractors             = 1
+    ) %>% ungroup() %>%
+    select(common_id, full_name, date_work, job_function_type_direct_indirect,job_function, double_decl_same_day, double_name_same_common_id, 
+           decl_total_working_days, decl_working_hours, number_of_contractors, contractor_decl) %>%
+    as.data.frame()
+
+ 
+  # combine both data frames  
+  contractor_agg <- rbind(contractor_no_id, contractor_with_id)
+
+  hours_check_employee_working_day  <- contractor_agg %>%
     full_join(gate_agg, by = c('common_id' = 'common_id', 'date_work' = 'working_day', 'job_function_type_direct_indirect' = 'job_function_type')) %>%
     group_by(common_id) %>%
     mutate(
