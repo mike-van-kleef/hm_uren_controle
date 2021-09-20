@@ -69,7 +69,8 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
       common_id = case_when(
         full_name == 'Rodriquez, Pieter Jose Frederik Jan'~ '27021967RODR',
         full_name == 'Wisniewski, Marcin'                 ~ '11041981WISN',
-        TRUE                                              ~  common_id
+        full_name == 'Mijnhals, Wesley'                   ~ '16101991MIJN',
+        TRUE                                              ~  common_id 
         ),
       
       job_function = case_when(
