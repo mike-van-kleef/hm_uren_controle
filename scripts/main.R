@@ -92,6 +92,11 @@ library(lubridate)
   file_name               <- paste0(file_map,"Mourik.xlsx")
   df.mourik_mint_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =2, skip_rows = 2)
   
+  file_map                <-  'data/raw/contractors/'
+  meta_file               <- paste0(file_map,"meta_mammoet.xlsx")
+  file_name               <- paste0(file_map,"Mammoet.xlsx")
+  df.mammoet_staging      <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 0)
+  
 # Clean Data   ----------------------------------------------------------------      
 # clean gate data
   df.gate_clean             <- CleanGateData(data = df.gate_staging, site = df.site_staging, p_workday_split = p_workday_split,
@@ -104,16 +109,24 @@ library(lubridate)
   df.mourik_pers_clean      <- CleanMourikData(data = df.mourik_pers_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_Personeel')  
   df.mourik_mint_clean      <- CleanMourikData(data = df.mourik_mint_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_International' )  
 
-# combine bothe data frames and aggregate 
-  df.mourik_clean      <- CombineMourikData(pers = df.mourik_pers_clean, mint = df.mourik_mint_clean)
+# combine both data frames and aggregate 
+  df.mourik_clean           <- CombineMourikData(pers = df.mourik_pers_clean, mint = df.mourik_mint_clean)
+
   
-  # select data for given time horizon. Only if (p_select_period == TRUE
+# clean Mammoet data  
+  df.mammoet_clean        <- CleanMammoetData(data = df.mammoet_staging)    
+
+  
+      
+# select data for given time horizon. Only if (p_select_period == TRUE
   if (p_select_period == TRUE){
     df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
     df.mourik_clean         <- df.mourik_clean[df.mourik_clean$date_work >= p_period_start & df.mourik_clean$date_work <= p_period_end,]
   }
 
-  
+
+
+    
 # combine contractors  ####### Nog andere contractors toevoegen #####
   #df.contractor            <- CombineContractors(bilfinger = df.bilfinger_clean, mourik = df.mourik_clean)
   df.contractor            <- df.bilfinger_clean
