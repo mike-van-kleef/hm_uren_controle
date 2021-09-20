@@ -21,7 +21,7 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
 # sort data by employee (common_id)
   data <- data %>%
     pivot_longer(
-      cols = ,colnames(data)[index],
+      cols = colnames(data)[index],
       names_to  = 'date_work',
       values_to = 'decl_working_hours' 
     ) %>% 
