@@ -125,6 +125,16 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
               & lead(date_work) == (date_work + 1)
               )
         )                                                                                     ~ 2,
+
+           delta_decl_vs_netto_hours < -6
+        &  !(
+             (if_else(is.na(lag(delta_decl_vs_netto_hours)) ,FALSE, lag(delta_decl_vs_netto_hours)  > 3)
+              & lag(date_work) == (date_work - 1)
+             )
+          | (if_else(is.na(lead(delta_decl_vs_netto_hours)),FALSE, lead(delta_decl_vs_netto_hours) > 3)
+             & lead(date_work) == (date_work + 1)
+            )
+          )                                                                                    ~ 3,
         
         TRUE                                                                                  ~ 0
       ),
@@ -134,7 +144,8 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
     
     mutate(
        netto_working_hours_cor = case_when(
-         netto_cor_ind >= 1                                                                   ~ 0,
+         netto_cor_ind %in% c(1,2)                                                            ~ 0,
+         netto_cor_ind == 3                                                                   ~ decl_working_hours,
          TRUE                                                                                 ~ netto_working_hours
       ),
       
@@ -181,7 +192,8 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        last_clock_buiten_site,
        employee_clocking_without_decl,
        netto_cor_ind,
-       commissioning_ind
+       commissioning_ind,
+       check_neg_decl
        
      ) %>% as.data.frame()
     
