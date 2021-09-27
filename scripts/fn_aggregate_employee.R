@@ -36,25 +36,25 @@ EmployeeCheckAgg <- function(hours_check_employee_working_day){
       double_name_same_common_id              = max(double_name_same_common_id, na.rm = TRUE),
       tot_decl_working_days                   = sum(if_else(decl_working_hours > 0, 1, 0)),
       tot_decl_working_hours                  = sum(decl_working_hours),
-      tot_working_days                        = sum(if_else(bruto_working_hours > 0, 1, 0)),
+      tot_working_days                        = sum(if_else(gross_working_hours > 0, 1, 0)),
       tot_hours_on_site                       = sum(tot_hours_on_site),
       tot_correction_no_check_out             = sum(tot_correction_no_check_out),
-      bruto_working_hours                     = sum(bruto_working_hours),
+      gross_working_hours                     = sum(gross_working_hours),
       tot_correction_early_arrival            = sum(tot_correction_early_arrival),
       tot_correction_late_departed            = sum(tot_correction_late_departed),
       tot_work_break                          = sum(work_break_cor_off_site),
       tot_change_of_dress_time                = sum(change_of_dress_time),
-      tot_netto_working_hours                 = sum(netto_working_hours),
-      tot_netto_working_hours_cor             = sum(netto_working_hours_cor),
-      tot_delta_decl_vs_bruto_hours           = sum(delta_decl_vs_bruto_hours),
-      tot_delta_decl_vs_netto_hours           = sum(delta_decl_vs_netto_hours),
-      tot_delta_decl_vs_netto_hours_cor       = sum(delta_decl_vs_netto_hours_cor)
+      tot_net_working_hours                   = sum(net_working_hours),
+      tot_net_working_hours_cor               = sum(net_working_hours_cor),
+      tot_delta_decl_vs_gross_hours           = sum(delta_decl_vs_gross_hours),
+      tot_delta_decl_vs_net_hours             = sum(delta_decl_vs_net_hours),
+      tot_delta_decl_vs_net_hours_cor         = sum(delta_decl_vs_net_hours_cor)
     ) %>% 
     mutate(
-      tot_delta_decl_vs_netto_hours_pos       = if_else(tot_delta_decl_vs_netto_hours_cor < 0, 0, tot_delta_decl_vs_netto_hours_cor),
+      tot_delta_decl_vs_net_hours_pos         = if_else(tot_delta_decl_vs_net_hours_cor < 0, 0, tot_delta_decl_vs_net_hours_cor),
       remark = case_when(
         common_id               == 'XXXX'                                        ~ 'Employee not found',
-        tot_netto_working_hours == 0                                             ~ 'Employee found - no gate clocking for period',
+        tot_net_working_hours == 0                                               ~ 'Employee found - no gate clocking for period',
         TRUE                                                                     ~ ''
         )
       ) %>% as.data.frame()
