@@ -38,7 +38,8 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       working_days_without_checkout_correction_ind = max(working_days_without_checkout_correction_ind),   
       first_name                                   = min(first_name),  
       last_name                                    = min(last_name),   
-      contractor                                   = min(contractor)   
+      contractor                                   = min(contractor),
+      contractor_decl                              = min(contractor_decl)
       ) %>%
     mutate(
       delta_last_first_clock                       = round(as.numeric(difftime(last_clock_buiten_site,first_clock, units = "hours")),3),
@@ -57,13 +58,14 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       # change_of_dress_time
       change_of_dress_time  = case_when(
         toupper(job_function_type) == "DIRECT"                                   ~ p_change_of_dress_time,
+        contractor_decl            == 'Mammoet'                                  ~ p_change_of_dress_time,
         TRUE                                                                     ~ 0
       ),
       
       # Determine Netto Working Hours
       netto_working_hours          = bruto_working_hours - tot_correction_early_arrival - tot_correction_late_departed - work_break_cor_off_site - change_of_dress_time
       
-      ) %>% as.data.frame()
+      ) %>% select(-c(contractor_decl)) %>% as.data.frame()
 
 # Check records
    df_controle  <- gate %>%  filter(site_ind_gate_ind != 'Buiten site_UIT')
