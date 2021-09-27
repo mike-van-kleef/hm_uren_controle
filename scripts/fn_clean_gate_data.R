@@ -45,7 +45,9 @@ CleanGateData <- function(data, site, p_workday_split, p_select_period, p_gate_d
       common_id          = if_else(is.na(common_id) == TRUE,  'UNKNOWN', toupper(common_id)),
       first_name         = if_else(is.na(first_name) == TRUE, 'UNKNOWN', trimws(first_name)),
       last_name          = if_else(is.na(contractor) == TRUE, 'UNKNOWN', trimws(last_name)),
-      contractor         = if_else(is.na(contractor) == TRUE, 'UNKNOWN', trimws(contractor))
+      contractor         = if_else(is.na(contractor) == TRUE, 'UNKNOWN', trimws(contractor)),
+      working_weekday    = tolower(wday(working_day, label=TRUE)),
+      working_weeknr     = isoweek(working_day)
       ) %>%
     
     group_by(common_id) %>% 
