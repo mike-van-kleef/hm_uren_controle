@@ -122,6 +122,7 @@ library(lubridate)
   if (p_select_period == TRUE){
     df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
     df.mourik_clean         <- df.mourik_clean[df.mourik_clean$date_work >= p_period_start & df.mourik_clean$date_work <= p_period_end,]
+    df.mammoet_clean        <- df.mammoet_clean[df.mammoet_clean$date_work >= p_period_start & df.mammoet_clean$date_work <= p_period_end,]
   }
 
 
@@ -130,6 +131,7 @@ library(lubridate)
 # combine contractors  ####### Nog andere contractors toevoegen #####
   #df.contractor            <- CombineContractors(bilfinger = df.bilfinger_clean, mourik = df.mourik_clean)
   df.contractor            <- df.bilfinger_clean
+  #df.contractor            <- df.mammoet_clean
   
 
 # select employees
@@ -171,6 +173,10 @@ library(lubridate)
   
 # prepare view for the audit of gate data
   list.audit_gate                           <- PrepareAuditView(gate = df.gate_correction, employee = df.employee)
+  
+
+# prepare view to level contractor
+  df_agg.hours_check_contractor             <- ContractorCheckAgg(employee = df_agg.hours_check_employee)
  
   
 # export files --------------------------------------------------------------------------------------------------------------------------------------
@@ -185,10 +191,20 @@ library(lubridate)
 # export urencontrole_medewerker  
   filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_urencontrole_medewerker.csv')
   write.csv2(df_agg.hours_check_employee, paste0(filepath,filename), row.names = FALSE)        
+  
+# export urencontrole_contractor
+  contractor = unique(df_agg.hours_check_contractor[1:1,])
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_urencontrole_contractor_',contractor,'.csv')
+  write.csv2(df_agg.hours_check_contractor, paste0(filepath,filename), row.names = TRUE)          
 
 # export audit_view_gate_Bilfinger_Maintenance  
   filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_Bilfinger_Maintenance.csv')
   write.csv2(list.audit_gate$Bilfinger_Maintenance, paste0(filepath,filename), row.names = FALSE)        
+  
+
+# export audit_view_gate_Mammoet
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_Mammoet.csv')
+  write.csv2(list.audit_gate$Mammoet, paste0(filepath,filename), row.names = FALSE)        
   
 
 # export audit_view_gate_all
@@ -206,7 +222,7 @@ library(lubridate)
   df.bf_staging[df.bf_staging$Code_ID == '03081988AAZZ',]
   
   #m =unique(df.bilfinger_clean[,c('full_name','firma','common_id','decl_total_working_hours','tarif')])
-  m =unique(df.mourik_clean[,c('full_name','common_id')])
+  m =unique(df.mammoet_clean[,c('full_name','common_id')])
   m = m[is.na(m$full_name) == FALSE,]
   p = unique(df.gate_clean[,c('common_id','first_name','last_name','contractor','date_birth')])
 
@@ -222,6 +238,7 @@ library(lubridate)
   
 # write.csv2(z2, "analyse/Bilfinger_unknown_persons.csv")  
 # write.csv2(z2, "Mourik_unknown_persons.csv")  
+# write.csv2(z2, "Mammoet_unknown_persons.csv")  
 
 # write.csv2(df_agg.hours_check_employee, "results/urencontrole_medewerker.csv")      
 # write.csv2(list.audit_gate$Bilfinger_Maintenance, "results/audit_view_gate_Bilfinger_Maintenance.csv")      
