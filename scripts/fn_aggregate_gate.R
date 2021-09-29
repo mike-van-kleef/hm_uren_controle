@@ -43,7 +43,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       ) %>%
     mutate(
       delta_last_first_clock                       = round(as.numeric(difftime(last_clock_buiten_site,first_clock, units = "hours")),3),
-      tot_hours_off_site                           = if_else( (is.na(delta_last_first_clock) == TRUE | delta_last_first_clock < 0 | delta_last_first_clock < tot_hours_on_site)
+      tot_hours_off_site                           = if_else( (is.na(delta_last_first_clock) == TRUE | delta_last_first_clock < 0 | delta_last_first_clock+0.005 < (tot_hours_on_site)) # +0.005 because of roundings
                                                              , 99999, delta_last_first_clock - tot_hours_on_site),
       
       # Determine Work Break
