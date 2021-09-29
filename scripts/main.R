@@ -177,7 +177,7 @@ library(lubridate)
   
   
 # aggregate to level employee
-# Bilfinger has 628 unique common_ids. 1 common_id with a double full_name and common_id = XXXX with 7 full_names. Together 636 unique common_id - full_names
+# Bilfinger has 628 unique common_ids. common_id = XXXX with 7 full_names. Together 635 unique common_id - full_names
   df_agg.hours_check_employee               <- EmployeeCheckAgg(hours_check_employee_working_day = df_agg.hours_check_employee_working_day)  
   
   
