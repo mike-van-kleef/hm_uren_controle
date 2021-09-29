@@ -14,7 +14,7 @@ CleanMammoetData <- function(data, job_function = ""){
   
 # sort data by common_id, week_nr
   data <- data %>%
-    filter(labour_equipment_ind == 'Labour Costs') %>%
+    #filter(labour_equipment_ind == 'Labour Costs') %>%
     arrange(common_id, week_nr, cost_center_code)
 
 
@@ -22,9 +22,12 @@ CleanMammoetData <- function(data, job_function = ""){
   data <- data %>%
     mutate(
       common_id = case_when(
-        is.na(common_id) == TRUE              ~ 'XXXX',
-        substr(common_id,1,1) == '?'          ~ 'XXXX',
-        TRUE                                  ~ toupper(common_id)
+        full_name             == 'Creemers, J.'    ~ '20011971CREM',
+        full_name             == 'Kok'             ~ '23121998KOK',
+        full_name             == 'Vryssier, M.'    ~ '27101974VAYS',
+        is.na(common_id)      == TRUE              ~ 'XXXX',
+        substr(common_id,1,1) == '?'               ~ 'XXXX',
+        TRUE                                       ~ toupper(common_id)
       ),
       
       
