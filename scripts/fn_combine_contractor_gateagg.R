@@ -136,6 +136,16 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
             )
           )                                                                                    ~ 3,
         
+        delta_decl_vs_netto_hours < -1
+        &  !(
+          (if_else(is.na(lag(delta_decl_vs_netto_hours)) ,FALSE, lag(delta_decl_vs_netto_hours)  > 0)
+           & lag(date_work) == (date_work - 1)
+          )
+          | (if_else(is.na(lead(delta_decl_vs_netto_hours)),FALSE, lead(delta_decl_vs_netto_hours) > 0)
+             & lead(date_work) == (date_work + 1)
+          )
+        )                                                                                    ~ 4,
+        
         TRUE                                                                                  ~ 0
       ),
       
