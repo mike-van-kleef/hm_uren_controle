@@ -28,7 +28,7 @@ EmployeeContractorFromGate <- function(gate){
       n_lastname_firstname = n_distinct(paste0(last_name,first_name))
     ) %>% arrange(desc(n_employee)) %>% as.data.frame()
   
-  employee_contractor = list(employee,contractor_agg)
+  employee_contractor = list(employee = employee,contractor_agg = contractor_agg)
   
 return(employee_contractor)  
   
