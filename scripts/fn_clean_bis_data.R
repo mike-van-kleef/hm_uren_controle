@@ -31,6 +31,8 @@ CleanBisData <- function(data, job_function = ""){
   data <- data %>%
     mutate(
       common_id = case_when(
+        common_id == '1401983KARC'            ~ '14101983KARC',  
+        common_id == '10021958BYS'            ~ '10021958ZBYS', 
         is.na(common_id) == TRUE              ~ 'XXXX',
         TRUE                                  ~ toupper(common_id)
       ),
@@ -46,6 +48,7 @@ CleanBisData <- function(data, job_function = ""){
         TRUE                                          ~ full_name
         ),
       
+      date_work         = as.Date(date_work),
       job_function_type = case_when(
         job_function_type == 'direct'                   ~ 'Direct',  
         job_function_type == 'indirect'                 ~ 'Indirect'  ,
