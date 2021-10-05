@@ -33,6 +33,7 @@ CleanBisData <- function(data, job_function = ""){
       common_id = case_when(
         common_id == '1401983KARC'            ~ '14101983KARC',  
         common_id == '10021958BYS'            ~ '10021958ZBYS', 
+        common_id == '20091986BATI'           ~ '16071973BATI',
         is.na(common_id) == TRUE              ~ 'XXXX',
         TRUE                                  ~ toupper(common_id)
       ),
@@ -115,7 +116,7 @@ CleanBisData <- function(data, job_function = ""){
   employee = unique(data_agg[,c('common_id','full_name')])
   id_not_unique = plyr::count(employee[,c('common_id')]) 
   id_not_unique = id_not_unique[id_not_unique$freq >1,]
-  print(employee[employee$common_id %in% id_not_unique$x & employee$common_i!= 'XXXX', ])    
+  print(employee[employee$common_id %in% id_not_unique$x & employee$common_id != 'XXXX', ])    
   cat("\n")
 
   
