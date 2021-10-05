@@ -93,7 +93,7 @@ colnames(data)[index] <- as.Date(as.numeric(colnames(data)[index]),origin = '189
   employee = unique(data[,c('common_id','full_name')])
   id_not_unique = plyr::count(employee[,c('common_id')]) 
   id_not_unique = id_not_unique[id_not_unique$freq >1,]
-  print(employee[employee$common_id %in% id_not_unique$x & employee$common_i!= 'XXXX', ])    
+  print(employee[employee$common_id %in% id_not_unique$x & employee$common_id != 'XXXX', ])    
   cat("\n")
 
   data <- data %>% 
