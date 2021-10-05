@@ -65,6 +65,8 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
       ),
       
       full_name = case_when(
+        full_name == 'Agelista'                 ~ 'Angelista SAM',
+        full_name == 'Anjos'                    ~ 'Vitorio Dos Anjos Samuel',
         full_name == 'Averink  D'               ~ 'Averink D',
         full_name == 'Averin k D'               ~ 'Averink D',
         full_name == 'A Ouadi'                  ~ 'Ouadi A',
@@ -72,18 +74,27 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
         full_name == 'C Bektas'                 ~ 'Bektas C',
         full_name == 'DA Silva'                 ~ 'Silva DA',
         full_name == 'Ferreira Macedo Alegria'  ~ 'Ferreira Marcedo Alegria DJ',
+        full_name == 'Ferreira Macedo Alegria D'~ 'Ferreira Marcedo Alegria DJ',
         full_name == 'Filipovoc I'              ~ 'Filipovic I',
         full_name == 'Finix  S'                 ~ 'Finix S',
         full_name == 'Halasowki M'              ~ 'Halasowski M',
+        full_name == 'Jagë'                     ~ 'Jäge',
+        full_name == 'Kdami A'                  ~ 'Mkadmi A',
         full_name == 'KJ Nederhand Ramires'     ~ 'Nederhand Ramirez KJ',
+        full_name == 'Kramer D'                 ~ 'Kramer G',
         full_name == 'Lange  HM de'             ~ 'Lange HM de',
         full_name == 'LC Afonso'                ~ 'Afonso LC',
+        full_name == 'Lopez Harteveldt'         ~ 'Lopez Harteveld',
+        full_name == 'Marques'                  ~ 'Pereira Marques C',
         full_name == 'Mathoera AA'              ~ 'Mathoera A',
+        full_name == 'Mathoera'                 ~ 'Mathoera A',
         full_name == 'OzturkH'                  ~ 'Ozturk H',
         full_name == 'OzturkM'                  ~ 'Ozturk M',
         full_name == 'OzturkS'                  ~ 'Ozturk S',
+        full_name == 'Paap'                     ~ 'Riet Paap K van',
         full_name == 'Riet Paap KA'             ~ 'Riet Paap K van',
         full_name == 'RR Badal'                 ~ 'Badal RR',
+        full_name == 'Vasile RA'                ~ 'Vasile R',
         TRUE                                    ~  full_name
         ),
       
@@ -103,7 +114,7 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
       counter_key           = n_distinct(paste0(scopenummer,costcenter)),
       same_scope_costcenter = if_else(counter > counter_key, 'Ja', 'Nee'),
       decl_working_hours    = sum(decl_working_hours)
-    )
+    ) %>% as.data.frame()
 
     
 # Employee has two or more declaration on same day
