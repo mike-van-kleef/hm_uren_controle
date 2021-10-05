@@ -83,15 +83,15 @@ library(lubridate)
   file_name               <- paste0(file_map,"Bilfinger Maintenance.xlsm")
   df.bf_staging           <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 2)
   
-  file_map                <-  'data/raw/contractors/'
-  meta_file               <- paste0(file_map,"meta_mourik_personeel.xlsx")
-  file_name               <- paste0(file_map,"Mourik.xlsx")
-  df.mourik_pers_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 1)
+  # file_map                <-  'data/raw/contractors/'
+  # meta_file               <- paste0(file_map,"meta_mourik_personeel.xlsx")
+  # file_name               <- paste0(file_map,"Mourik.xlsx")
+  # df.mourik_pers_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =1, skip_rows = 1)
   
   file_map                <-  'data/raw/contractors/'
-  meta_file               <- paste0(file_map,"meta_mourik_mint.xlsx")
+  meta_file               <- paste0(file_map,"meta_mourik.xlsx")
   file_name               <- paste0(file_map,"Mourik.xlsx")
-  df.mourik_mint_staging  <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =2, skip_rows = 2)
+  df.mourik_staging       <- import_files(p.meta = TRUE, filemeta = meta_file, filename = file_name, sheet.nr =6, skip_rows = 0)
   
   file_map                <-  'data/raw/contractors/'
   meta_file               <- paste0(file_map,"meta_mammoet.xlsx")
@@ -112,6 +112,7 @@ library(lubridate)
   df.bilfinger_clean        <- CleanBilfingerData(data = df.bf_staging, job_function = df.job_function_bf_staging)  
 
 # clean Mourik data
+  df.mourik_clean           <- CleanMourikData(data = df.mourik_staging, job_function = df.job_function_mourik_staging)  
   # df.mourik_pers_clean      <- CleanMourikData(data = df.mourik_pers_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_Personeel')  
   # df.mourik_mint_clean      <- CleanMourikData(data = df.mourik_mint_staging, job_function = df.job_function_mourik_staging, p_department = 'Mourik_International' )  
 
@@ -251,7 +252,8 @@ library(lubridate)
   
   #m =unique(df.bilfinger_clean[,c('full_name','firma','common_id','decl_total_working_hours','tarif')])
   #m =unique(df.mammoet_clean[,c('full_name','common_id')])
-  m =unique(df.bis_clean[,c('full_name','common_id')])
+  #m =unique(df.bis_clean[,c('full_name','common_id')])
+  m =unique(df.mourik_clean[,c('full_name','common_id')])
   m = m[is.na(m$full_name) == FALSE,]
   p = unique(df.gate_clean[,c('common_id','first_name','last_name','contractor','date_birth')])
 
@@ -269,6 +271,7 @@ library(lubridate)
 # write.csv2(z2, "Mourik_unknown_persons.csv")  
 # write.csv2(z2, "Mammoet_unknown_persons.csv")  
 # write.csv2(z2, "BIS_unknown_persons.csv")  
+# write.csv2(z2, "Mourik_unknown_persons.csv")  
 
 # write.csv2(df_agg.hours_check_employee, "results/urencontrole_medewerker.csv")      
 # write.csv2(list.audit_gate$Bilfinger_Maintenance, "results/audit_view_gate_Bilfinger_Maintenance.csv")      
