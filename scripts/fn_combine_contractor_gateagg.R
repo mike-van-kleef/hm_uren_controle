@@ -73,6 +73,8 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
     filter(date_work >= first_work_day_contractor -1 & date_work <= last_work_day_contractor + 1) %>%
     
     mutate(
+      week_day                              = tolower(wday(date_work, label=TRUE)),
+      week_nr                               = isoweek(date_work),
       decl_working_hours                    = if_else(is.na(decl_working_hours)                    == TRUE, 0, decl_working_hours),
       tot_hours_on_site                     = if_else(is.na(tot_hours_on_site)                     == TRUE, 0, tot_hours_on_site),
       tot_correction_no_check_out           = if_else(is.na(tot_correction_no_check_out)           == TRUE, 0, tot_correction_no_check_out),
@@ -176,6 +178,8 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        job_function_type                   = job_function_type_direct_indirect,
        duplicate_function_type,
        date_work,
+       week_nr,
+       week_day,
        deviating_start_shift,
        shift_type,
        decl_total_working_days,
