@@ -11,7 +11,13 @@ SelectEmployee <- function(contractors){
 
 
 # select employees
-  df.employee              <- unique(contractors[, c('full_name','common_id','job_function_type', 'contractor_decl')])   
+  contractor = unique(contractors$contractor_decl)
+  if(contractor == 'Mourik'){
+    df.employee                <- unique(contractors[, c('full_name','common_id','job_function_type','personnel_type', 'contractor_decl')])   
+  } else{
+    df.employee                <- unique(contractors[, c('full_name','common_id','job_function_type', 'contractor_decl')])  
+    df.employee$personnel_type <- 'NVT'
+  }
 
 
 # determine number of function_type for the same common_id  
