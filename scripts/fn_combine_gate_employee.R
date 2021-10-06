@@ -15,7 +15,8 @@ CombineGateEmployee <- function(gate, employee){
   gate <- gate %>%
     left_join(employee, by = 'common_id') %>%
     mutate(
-      job_function_type = if_else(is.na(job_function_type) == TRUE, 'UNKNOWN', job_function_type)
+      job_function_type = if_else(is.na(job_function_type) == TRUE, 'UNKNOWN', job_function_type),
+      personnel_type    = if_else(is.na(personnel_type) == TRUE, 'UNKNOWN', personnel_type)
     )
 
 return(gate)  
