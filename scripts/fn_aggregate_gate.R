@@ -25,7 +25,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
 # Aggregate gate data to level workingday
   gate_agg <- gate %>%
     filter(site_ind_gate_ind != 'Buiten site_UIT') %>%
-    group_by(common_id, common_id_unique_ind, job_function_type, shift_type, working_day, duplicate_function_type, 
+    group_by(common_id, common_id_unique_ind, job_function_type, personnel_type, shift_type, working_day, duplicate_function_type, 
              first_clock, first_clock_time, first_clock_hour, last_clock, last_clock_buiten_site, deviating_start_shift, number_of_clocks, commissioning_ind) %>%
     summarise(
       tot_hours_on_site                            = sum(workhours),
@@ -59,6 +59,7 @@ AggregateGate <- function(gate, p_shift_start_day, p_shift_start_night, p_shift_
       change_of_dress_time  = case_when(
         toupper(job_function_type) == "DIRECT"                                   ~ p_change_of_dress_time,
         contractor_decl            == 'Mammoet'                                  ~ p_change_of_dress_time,
+        contractor_decl            == 'Mourik' & personnel_type == 'personeel'   ~ p_change_of_dress_time,
         TRUE                                                                     ~ 0
       ),
       
