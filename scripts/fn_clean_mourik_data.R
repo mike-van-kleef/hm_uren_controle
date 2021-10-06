@@ -43,7 +43,7 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
       job_function      = trimws(gsub('[0-9]+%','',job_function)),
       job_function_type = trimws(job_function_type)
     )
-  df.job_function <- unique(df.job_function[,c('job_function','job_function_type')])
+  df.job_function <- unique(df.job_function[,c('job_function','job_function_type','personnel_type')])
   
   
 # Add job function type (direct vs indirect)    
@@ -87,7 +87,7 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
         full_name == 'Lopez Harteveldt'         ~ 'Lopez Harteveld',
         full_name == 'Marques'                  ~ 'Pereira Marques C',
         full_name == 'Mathoera AA'              ~ 'Mathoera A',
-        full_name == 'Mathoera'                 ~ 'Mathoera A',
+        #full_name == 'Mathoera'                 ~ 'Mathoera A',
         full_name == 'OzturkH'                  ~ 'Ozturk H',
         full_name == 'OzturkM'                  ~ 'Ozturk M',
         full_name == 'OzturkS'                  ~ 'Ozturk S',
@@ -103,12 +103,21 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
         toupper(shift_type) == 'N'          ~ 'Nacht',
         TRUE                                ~ 'Onbekend'
       )
+    ) %>% 
+    group_by(common_id) %>%
+    mutate(
+      n_job_functions = n_distinct(job_function),
+      job_function    = if_else(n_job_functions > 1, 'meerdere job_functions', job_function),
+      n_peronnel_type = n_distinct(personnel_type),
+      personnel_type  = max(personnel_type)
     ) %>%
-    select(-c(job_function_uitgebreid, job_function, tarif, shift_type))
+    ungroup() %>%
+    select(-c(job_function_uitgebreid, tarif, shift_type)) %>% as.data.frame()
+    
 
-# Aggregate to common_id,full_name,date_work, week_nr,personnel_type, job_function_type, contractor_decl
+# Aggregate to common_id,full_name,date_work, week_nr,soort, job_function_type, contractor_decl
   data_agg <- data %>%
-    group_by(common_id,full_name,date_work, week_nr,personnel_type, job_function_type, contractor_decl) %>%
+    group_by(common_id,full_name,date_work, week_nr,soort, job_function, n_job_functions, job_function_type, personnel_type, n_peronnel_type, contractor_decl) %>%
     summarise(
       counter               = n(),
       counter_key           = n_distinct(paste0(scopenummer,costcenter)),
@@ -152,17 +161,18 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
 # aggregate data to common_id and date_work    
   data_agg        <- data_agg %>% 
     mutate(
-      personnel_type_dummy = gsub(' ','_',personnel_type)
+      soort_dummy = gsub(' ','_',soort)
     ) %>%
     pivot_wider(
-      id_cols     = c(common_id, full_name, date_work, job_function_type, double_decl_same_day, double_name_same_common_id, contractor_decl),
-      names_from  = personnel_type_dummy,
+      id_cols     = c(common_id, full_name, date_work, job_function, n_job_functions, job_function_type, personnel_type, n_peronnel_type, double_decl_same_day, double_name_same_common_id, contractor_decl),
+      names_from  = soort_dummy,
       values_from = decl_working_hours,
       values_fill = 0
       ) %>% 
     
     mutate(
-      decl_working_hours = Personeel + Personeel_MINT + Personeel_staf
+      decl_total_working_days = -1,
+      decl_working_hours      = Personeel + Personeel_MINT + Personeel_staf
     ) %>%  as.data.frame()
   
 return(data_agg)  
