@@ -127,8 +127,11 @@ CleanMammoetData <- function(data, job_function = ""){
    left_join(data_eind,  by = c('common_id', 'full_name' ,'week_nr','cost_center_code','day')) %>%
    left_join(data_pauze, by = c('common_id', 'full_name' ,'week_nr','cost_center_code','day')) %>%
    mutate(
+     decl_time_pauze           = if_else(is.na(decl_time_pauze) == TRUE, format("00:00:00",  format = "%H:%M:%S") ,decl_time_pauze)
+   ) %>%
+   mutate(
      decl_time_eind_dummy      = if_else(decl_time_eind < decl_time_start, decl_time_eind + 3600*24, decl_time_eind),
-     decl_time_pauze           = if_else(is.na(decl_time_pauze) == TRUE, 0 , minute(hms(decl_time_pauze)) / 60),
+     decl_time_pauze           = if_else(is.na(decl_time_pauze) == TRUE, 0 , (minute(hms(decl_time_pauze)) / 60) + hour(hms(decl_time_pauze)) ),
      decl_working_hours_bruto  = as.numeric(difftime(decl_time_eind_dummy, decl_time_start, unit = 'hours')),
      decl_working_hours        = decl_working_hours_bruto - decl_time_pauze,
      
@@ -149,6 +152,7 @@ CleanMammoetData <- function(data, job_function = ""){
    summarise(
      double_decl_same_day = n(),
      decl_total_working_days = -1,
+     decl_time_pauze      = sum(decl_time_pauze),
      decl_working_hours   = sum(decl_working_hours)
    ) %>% as.data.frame()
    
