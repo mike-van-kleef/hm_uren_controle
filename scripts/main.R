@@ -130,9 +130,9 @@ library(lubridate)
 # select data for given time horizon. Only if (p_select_period == TRUE
   if (p_select_period == TRUE){
     df.bilfinger_clean      <- df.bilfinger_clean[df.bilfinger_clean$date_work >= p_period_start & df.bilfinger_clean$date_work <= p_period_end,]
-    #df.mourik_clean         <- df.mourik_clean[df.mourik_clean$date_work       >= p_period_start & df.mourik_clean$date_work    <= p_period_end,]
+    df.mourik_clean         <- df.mourik_clean[df.mourik_clean$date_work       >= p_period_start & df.mourik_clean$date_work    <= p_period_end,]
     df.mammoet_clean        <- df.mammoet_clean[df.mammoet_clean$date_work     >= p_period_start & df.mammoet_clean$date_work   <= p_period_end,]
-    df.bis_clean            <- df.bis_clean[df.bis_clean$date_work     >= p_period_start & df.bis_clean$date_work   <= p_period_end,]
+    df.bis_clean            <- df.bis_clean[df.bis_clean$date_work             >= p_period_start & df.bis_clean$date_work       <= p_period_end,]
   }
 
 
@@ -140,9 +140,10 @@ library(lubridate)
     
 # combine contractors  ####### Nog andere contractors toevoegen #####
   #df.contractor            <- CombineContractors(bilfinger = df.bilfinger_clean, mourik = df.mourik_clean)
-  df.contractor            <- df.bilfinger_clean
-  #df.contractor            <- df.mammoet_clean
+  #df.contractor            <- df.bilfinger_clean
+  df.contractor            <- df.mammoet_clean
   #df.contractor            <- df.bis_clean
+  #df.contractor             <- df.mourik_clean
   
 
 # select employees
@@ -224,7 +225,10 @@ library(lubridate)
 # export audit_view_gate_Bis
   filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_BIS.csv')
   write.csv2(list.audit_gate$BIS, paste0(filepath,filename), row.names = FALSE)     
-  
+
+# export audit_view_gate_Mourik
+  filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_Mourik.csv')
+  write.csv2(list.audit_gate$Mourik, paste0(filepath,filename), row.names = FALSE)      
 
 # export audit_view_gate_all
   filename <- paste0(format(Sys.Date(),'%Y%m%d'),'_audit_view_gate_all.csv')
