@@ -158,7 +158,7 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
       netto_working_hours_cor = case_when(
          netto_cor_ind %in% c(1,2)                                                            ~ 0,
          netto_cor_ind ==   3                                                                 ~ decl_working_hours,
-         netto_cor_ind ==   4 & contractor_decl %in% c('BIS')                                 ~ decl_working_hours,
+         netto_cor_ind ==   4 & contractor_decl %in% c('BIS','Mammoet')                       ~ decl_working_hours,
          TRUE                                                                                 ~ netto_working_hours
       ),
       
@@ -176,6 +176,7 @@ CombineContractorGateAgg <- function(contractor, gate_agg, employee){
        contractor_decl,
        job_function,
        job_function_type                   = job_function_type_direct_indirect,
+       personnel_type,
        duplicate_function_type,
        date_work,
        week_nr,
