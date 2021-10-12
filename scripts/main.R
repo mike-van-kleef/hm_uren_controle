@@ -15,6 +15,7 @@ p_select_period              <- TRUE                                    # specif
 p_period_start               <- as.Date('2021-03-14')                   # specifies the start date of the period
 p_period_end                 <- as.Date('2021-06-02')                   # specifies the end date of the period (30 mei 2021 + 2 days for marge)
 #p_period_end                 <- as.Date('2021-07-11')                   # specifies the end date of the period for BIS (09 july 2021 + 2 days for marge)
+p_period_end                 <- as.Date('2021-08-04')                   # specifies the end date of the period for Mourik (04 Aug 2021)
 p_workday_split              <- 5                                       # specifies the split. work hours for the split are counted on the previous day
 p_shift_start_day            <- format("07:00:00", format = "%H:%M:%S") # specifies the start of day shift
 p_shift_start_night          <- format("18:00:00", format = "%H:%M:%S") # specifies the start of night shift
@@ -141,9 +142,9 @@ library(lubridate)
 # combine contractors  ####### Nog andere contractors toevoegen #####
   #df.contractor            <- CombineContractors(bilfinger = df.bilfinger_clean, mourik = df.mourik_clean)
   #df.contractor            <- df.bilfinger_clean
-  df.contractor            <- df.mammoet_clean
+  #df.contractor            <- df.mammoet_clean
   #df.contractor            <- df.bis_clean
-  #df.contractor             <- df.mourik_clean
+  df.contractor             <- df.mourik_clean
   
 
 # select employees
