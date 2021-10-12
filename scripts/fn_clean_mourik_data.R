@@ -31,6 +31,12 @@ CleanMourikData <- function(data, job_function = "", p_department = ""){
 # remove ademluchtvergoeding
   data <- data[tolower(data$job_function) != 'ademluchtvergoeding',]  
   
+# remove full_name equal to Chauffeur or Chauffer
+  data <- data[!grepl(pattern = c('chauffe'), tolower(data$full_name)),]
+  
+# remove full_name equal to Week
+  data <- data[!grepl(pattern = c('week'), tolower(data$full_name)),]  
+  
 # remove punctuations
   data$full_name         = str_replace_all(data$full_name, "[[:punct:]]", "")  
 
